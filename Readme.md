@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Oxana Garascenco](https://up.htmlacademy.ru/ecmascript/17/user/122666).
-* Наставник: `Неизвестно`.
+* Наставник: `Иван Чернобук`(https://htmlacademy.ru/profile/id237614).
 
 ---
 
