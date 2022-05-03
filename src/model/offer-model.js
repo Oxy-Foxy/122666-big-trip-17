@@ -1,8 +1,6 @@
-import { getTypes } from '../mock/types';
-import {generateOffer} from '../mock/offer';
-const offerTypes = getTypes();
+import {generateOffers} from '../mock/offer';
 
 export default class OffersModel {
-  offers = Array.from(offerTypes, (type)=>generateOffer(type));
+  offers = generateOffers();
   getOffers = ()=> this.offers;
 }

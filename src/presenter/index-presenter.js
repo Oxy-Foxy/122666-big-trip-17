@@ -13,23 +13,31 @@ const contentContainer = document.querySelector('.trip-events');
 export default class IndexPresenter {
   listComponent = new listView();
   formCreateContainer = new listItemView();
-  formUpdateContainer = new listItemView();
 
-  init = (pointsModel) => {
+  init = (pointsModel, offersModel) => {
     this.pointsModel = pointsModel;
+    this.offersModel = offersModel;
     this.points = [...this.pointsModel.getPoints()];
+    this.offers = [...this.offersModel.getOffers()];
     render(new filtersView(), filtersContainer);
     render(new sortView(), contentContainer);
     render(this.listComponent, contentContainer);
-    render(this.formUpdateContainer, this.listComponent.getElement());
-    render(new formUpdateView(this.points[0]), this.formUpdateContainer.getElement());
-    render(this.formCreateContainer, this.listComponent.getElement());
-    render(new formCreateView(), this.formCreateContainer.getElement());
+
 
     for (let i = 0; i < this.points.length; i++) {
+      const point = this.points[i];
+      const offersOfType = this.offers.filter((offersItem) => offersItem.type === point.type)[0];
       const item = new listItemView();
-      render(item, this.listComponent.getElement());
-      render(new pointView(this.points[i]), item.getElement());
+      if(i===0){
+        render(item, this.listComponent.getElement());
+        render(new formUpdateView(point, offersOfType.offers), item.getElement());
+      } else {
+        render(item, this.listComponent.getElement());
+        render(new pointView(point, offersOfType.offers), item.getElement());
+      }
     }
+
+    render(this.formCreateContainer, this.listComponent.getElement());
+    render(new formCreateView(), this.formCreateContainer.getElement());
   };
 }

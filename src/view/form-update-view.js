@@ -15,10 +15,10 @@ const getTypesItems = (point)=>{
   });
   return result;
 };
-const getImages = (point)=>{
-  if(point.destination.pictures.length){
+const getImages = (pictures)=>{
+  if(pictures.length){
     let images = '';
-    point.destination.pictures.forEach((picture) => {
+    pictures.forEach((picture) => {
       images += `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`;
     });
     return `<div class="event__photos-container">
@@ -28,14 +28,34 @@ const getImages = (point)=>{
   </div>`;
   }
 };
+const getTypeOffers = (offers, pointOffers)=>{
+  let result = '';
 
-const createNewFormUpdateTemplate = (point) => {
+  offers.forEach((offer) => {
+    const checked = pointOffers.includes(offer.id) ? 'checked': '';
+    result += `<div class="event__offer-selector">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal" ${checked}>
+    <label class="event__offer-label" for="event-offer-meal-1">
+      <span class="event__offer-title">${offer.title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${offer.price}</span>
+    </label>
+  </div>`;
+  });
+  return result;
+};
+
+const createNewFormUpdateTemplate = (point, filteredOffers) => {
   const type = point.type;
+  const typesItems = getTypesItems(point);
   const destinationName = point.destination.name;
   const price = point.basePrice;
   const description = point.destination.description;
   const startDateTime = getformDateTime(point.dateFrom);
   const endDateTime = getformDateTime(point.dateTo);
+  const pointOffers = point.offers;
+  const typeOffers = getTypeOffers(filteredOffers, pointOffers);
+  const images = getImages(point.destination.pictures);
   return `
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -50,7 +70,7 @@ const createNewFormUpdateTemplate = (point) => {
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
 
-            ${getTypesItems(point)}
+            ${typesItems}
           </fieldset>
         </div>
       </div>
@@ -94,69 +114,27 @@ const createNewFormUpdateTemplate = (point) => {
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-            <label class="event__offer-label" for="event-offer-luggage-1">
-              <span class="event__offer-title">Add luggage</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">50</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-            <label class="event__offer-label" for="event-offer-comfort-1">
-              <span class="event__offer-title">Switch to comfort</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">80</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-            <label class="event__offer-label" for="event-offer-meal-1">
-              <span class="event__offer-title">Add meal</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">15</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-            <label class="event__offer-label" for="event-offer-seats-1">
-              <span class="event__offer-title">Choose seats</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">5</span>
-            </label>
-          </div>
-
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-            <label class="event__offer-label" for="event-offer-train-1">
-              <span class="event__offer-title">Travel by train</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">40</span>
-            </label>
-          </div>
+          ${typeOffers}
         </div>
       </section>
 
       <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
         <p class="event__destination-description">${description}</p>
-        ${getImages(point)}
+        ${images}
       </section>
     </section>
   </form>`;
 };
 
-export default class NewFormUpdateView {
-  constructor(point){
+export default class FormUpdateView {
+  constructor(point, offers){
     this.point = point;
+    this.offers = offers;
   }
 
   getTemplate() {
-    return createNewFormUpdateTemplate(this.point);
+    return createNewFormUpdateTemplate(this.point, this.offers);
   }
 
   getElement() {

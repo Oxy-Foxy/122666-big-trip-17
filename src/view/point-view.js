@@ -1,22 +1,26 @@
 import {createElement} from '../render';
 import {getShortDate, getDate, getTime, getDifference} from '../utils';
 
-const getOffersItems = (offers)=>{
+const getOffersItems = (offers, pointOffers)=>{
   let result = '';
   offers.forEach((offer) => {
-    result += `<li class="event__offer">
-    <span class="event__offer-title">${offer.title}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${offer.price}</span>
-  </li>`;
+    if(pointOffers.includes(offer.id)) {
+      result += `<li class="event__offer">
+        <span class="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </li>`;
+    }
   });
   return result;
 };
 
-const createNewPointTemplate = (point) => {
+const createNewPointTemplate = (point, filteredOffers) => {
   const type = point.type;
+  const price = point.basePrice;
   const btnClassActive = point.isFavorite ? 'event__favorite-btn--active' : '';
-  const offers = getOffersItems(point.offers);
+  const pointOffers = point.offers;
+  const offers = getOffersItems(filteredOffers, pointOffers);
   const shortDate = getShortDate(point.dateFrom);
   const date = getDate(point.dateFrom);
   const startTime = getTime(point.dateFrom);
@@ -47,7 +51,7 @@ const createNewPointTemplate = (point) => {
     </div>
 
     <p class="event__price">
-      &euro;&nbsp;<span class="event__price-value">${point.basePrice}</span>
+      &euro;&nbsp;<span class="event__price-value">${price}</span>
     </p>
 
     <h4 class="visually-hidden">Offers:</h4>
@@ -65,13 +69,14 @@ const createNewPointTemplate = (point) => {
   </div>`;
 };
 
-export default class NewPointView {
-  constructor(point){
+export default class PointView {
+  constructor(point, offers){
     this.point = point;
+    this.offers = offers;
   }
 
   getTemplate() {
-    return createNewPointTemplate(this.point);
+    return createNewPointTemplate(this.point, this.offers);
   }
 
   getElement() {
