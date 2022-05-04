@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import {createElement} from '../render';
 
 const createNewFormCreateTemplate = () => `
 <form class="event event--edit" action="#" method="post">
