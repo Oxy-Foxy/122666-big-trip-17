@@ -27,7 +27,6 @@ export default class IndexPresenter {
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
     this.#points = [...this.#pointsModel.points];
-    // this.#points = [];
     this.#offers = [...this.#offersModel.offers];
     render(new filtersView(), this.#filtersContainer);
     if(this.#points.length){
