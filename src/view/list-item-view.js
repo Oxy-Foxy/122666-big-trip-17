@@ -2,20 +2,21 @@ import {createElement} from '../render';
 
 const createNewListItemTemplate = () => '<li class="trip-events__item"></li>';
 
-export default class NewListItemView {
-  getTemplate() {
+export default class ListItemView {
+  #element = null;
+  get template() {
     return createNewListItemTemplate();
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

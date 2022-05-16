@@ -18,20 +18,21 @@ const createNewFiltersTemplate = () => `
   <button class="visually-hidden" type="submit">Accept filter</button>
 </form>`;
 
-export default class NewFiltersView {
-  getTemplate() {
+export default class FiltersView {
+  #element = null;
+  get template() {
     return createNewFiltersTemplate();
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
