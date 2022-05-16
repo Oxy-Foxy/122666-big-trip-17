@@ -11,7 +11,6 @@ const contentContainer = document.querySelector('.trip-events');
 
 export default class IndexPresenter {
   #listComponent = null;
-  #formCreateContainer = null;
   #filtersContainer = null;
   #contentContainer = null;
   #pointsModel = null;
@@ -21,7 +20,6 @@ export default class IndexPresenter {
 
   init = (pointsModel, offersModel) => {
     this.#listComponent = new listView();
-    this.#formCreateContainer = new listItemView();
     this.#filtersContainer = filtersContainer;
     this.#contentContainer = contentContainer;
     this.#pointsModel = pointsModel;
@@ -44,34 +42,39 @@ export default class IndexPresenter {
     const editItem = new formUpdateView(point, offersOfType.offers);
     const pointElm = new pointView(point, offersOfType.offers);
 
-    const replacePointToForm = () => {
+    const showForm = () => {
       item.element.replaceChild(editItem.element, pointElm.element);
+      document.addEventListener('keydown', onEscKeyDown);
     };
-    const replaceFormToPoint = () => {
+    const hideForm = () => {
       item.element.replaceChild(pointElm.element, editItem.element);
     };
     const onPointRollupBtnClick = () => {
-      replacePointToForm();
+      showForm();
     };
     const onEditFormRollupBtnClick = () => {
-      replaceFormToPoint();
+      hideForm();
     };
-    const onEscKeyDown = (evt)=> {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        replaceFormToPoint();
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
+
     const onEditFormSubmit = (evt) => {
-      evt.preventDefault();
-      replaceFormToPoint();
-      document.removeEventListener('keydown', onEscKeyDown);
+      hideFormHandler(evt);
     };
+
+    function onEscKeyDown(evt) {
+      if (evt.key === 'Escape' || evt.key === 'Esc') {
+        hideFormHandler(evt);
+      }
+    }
+
+    function hideFormHandler(evt){
+      evt.preventDefault();
+      hideForm();
+      document.removeEventListener('keydown', onEscKeyDown);
+    }
+
 
     pointElm.element.querySelector('.event__rollup-btn').addEventListener('click', onPointRollupBtnClick);
     editItem.element.querySelector('.event__rollup-btn').addEventListener('click', onEditFormRollupBtnClick);
-    document.addEventListener('keydown', onEscKeyDown);
     editItem.element.addEventListener('submit', onEditFormSubmit);
 
     render(item, this.#listComponent.element);
