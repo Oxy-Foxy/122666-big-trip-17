@@ -1,4 +1,4 @@
-import {createElement} from '../render';
+import AbstractView from '../framework/view/abstract-view';
 import {getformDateTime} from '../utils';
 import { getTypes } from '../mock/types';
 
@@ -127,11 +127,11 @@ const createNewFormUpdateTemplate = (point, filteredOffers) => {
   </form>`;
 };
 
-export default class FormUpdateView {
+export default class FormUpdateView extends AbstractView {
   #point = null;
   #offers = null;
-  #element = null;
   constructor(point, offers){
+    super();
     this.#point = point;
     this.#offers = offers;
   }
@@ -140,15 +140,23 @@ export default class FormUpdateView {
     return createNewFormUpdateTemplate(this.#point, this.#offers);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setClickHandler = (callback)=>{
+    this._callback.click = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
+  };
 
-    return this.#element;
-  }
+  setSubmitHandler = (callback)=>{
+    this._callback.submit = callback;
+    this.element.addEventListener('submit',this.#submitHandler);
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  #clickHandler = (evt)=>{
+    evt.preventDefault();
+    this._callback.click();
+  };
+
+  #submitHandler = (evt)=>{
+    evt.preventDefault();
+    this._callback.submit();
+  };
 }

@@ -5,7 +5,7 @@ import listItemView from '../view/list-item-view';
 import pointView from '../view/point-view';
 import formUpdateView from '../view/form-update-view';
 import EmptyMessageView from '../view/empty-message-view';
-import {render} from '../render';
+import {render} from '../framework/render';
 
 const filtersContainer = document.querySelector('.trip-controls__filters');
 const contentContainer = document.querySelector('.trip-events');
@@ -28,17 +28,12 @@ export default class IndexPresenter {
     this.#offersModel = offersModel;
     this.#points = [...this.#pointsModel.points];
     this.#offers = [...this.#offersModel.offers];
+
     render(new filtersView(), this.#filtersContainer);
     if(this.#points.length){
-      render(new sortView(), this.#contentContainer);
-      render(this.#listComponent, this.#contentContainer);
-
-      for (let i = 0; i < this.#points.length; i++) {
-        this.#renderPoint(this.#points[i]);
-      }
+      this.#renderPoints();
     } else {
-      this.#emptyMessageElm = new EmptyMessageView();
-      render(this.#emptyMessageElm, this.#contentContainer);
+      this.#renderEmptyMessage();
     }
   };
 
@@ -78,12 +73,32 @@ export default class IndexPresenter {
       document.removeEventListener('keydown', onEscKeyDown);
     }
 
+    pointElm.setClickHandler(()=>{
+      onPointRollupBtnClick();
+    });
 
-    pointElm.element.querySelector('.event__rollup-btn').addEventListener('click', onPointRollupBtnClick);
-    editItem.element.querySelector('.event__rollup-btn').addEventListener('click', onEditFormRollupBtnClick);
-    editItem.element.addEventListener('submit', onEditFormSubmit);
+    editItem.setClickHandler(()=>{
+      onEditFormRollupBtnClick();
+    });
+    editItem.setSubmitHandler(()=>{
+      onEditFormSubmit();
+    });
 
     render(item, this.#listComponent.element);
     render(pointElm, item.element);
+  };
+
+  #renderPoints = ()=>{
+    render(new sortView(), this.#contentContainer);
+    render(this.#listComponent, this.#contentContainer);
+
+    for (let i = 0; i < this.#points.length; i++) {
+      this.#renderPoint(this.#points[i]);
+    }
+  };
+
+  #renderEmptyMessage = ()=>{
+    this.#emptyMessageElm = new EmptyMessageView();
+    render(this.#emptyMessageElm, this.#contentContainer);
   };
 }
