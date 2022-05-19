@@ -57,18 +57,17 @@ export default class IndexPresenter {
       hideForm();
     };
 
-    const onEditFormSubmit = (evt) => {
-      hideFormHandler(evt);
+    const onEditFormSubmit = () => {
+      hideFormHandler();
     };
 
     function onEscKeyDown(evt) {
       if (evt.key === 'Escape' || evt.key === 'Esc') {
-        hideFormHandler(evt);
+        hideFormHandler();
       }
     }
 
-    function hideFormHandler(evt){
-      evt.preventDefault();
+    function hideFormHandler(){
       hideForm();
       document.removeEventListener('keydown', onEscKeyDown);
     }
