@@ -3,9 +3,8 @@ import DestinationModel from './destination-model';
 
 export default class PointsModel {
   destination = new DestinationModel().getDestination();
-  #points = Array.from({length:4}, ()=>generatePoint(this.destination));
+  #points = Array.from(['point_0','point_1','point_2','point_3'], (index)=>generatePoint(this.destination, index));
 
-  // getPoints = ()=> this.points;
   get points(){
     return this.#points;
   }
