@@ -12,5 +12,18 @@ const getDifference = (date1, date2) => {
 };
 const getformDateTime = (date) => dayjs(date).format('DD/MM/YY HH:mm');
 
+const updateItem = (items, update) => {
+  const index = items.findIndex((item) => item.id === update.id);
 
-export { getShortDate, getDate, getTime, getDifference, getformDateTime};
+  if (index === -1) {
+    return items;
+  }
+
+  return [
+    ...items.slice(0, index),
+    update,
+    ...items.slice(index + 1),
+  ];
+};
+
+export { getShortDate, getDate, getTime, getDifference, getformDateTime, updateItem};

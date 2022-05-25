@@ -1,11 +1,10 @@
 import filtersView from '../view/filters-view';
 import sortView from '../view/sort-view';
 import listView from '../view/list-view';
-import listItemView from '../view/list-item-view';
-import pointView from '../view/point-view';
-import formUpdateView from '../view/form-update-view';
 import EmptyMessageView from '../view/empty-message-view';
+import PointPresenter from './point-presenter';
 import {render} from '../framework/render';
+import {updateItem} from '../utils';
 
 const filtersContainer = document.querySelector('.trip-controls__filters');
 const contentContainer = document.querySelector('.trip-events');
@@ -15,10 +14,11 @@ export default class IndexPresenter {
   #filtersContainer = null;
   #contentContainer = null;
   #pointsModel = null;
-  #emptyMessageElm = null;
+  #emptyMessageElm = new EmptyMessageView();
   #offersModel = null;
   #points = [];
   #offers = [];
+  #pointPresenter = new Map();
 
   init = (pointsModel, offersModel) => {
     this.#listComponent = new listView();
@@ -29,66 +29,16 @@ export default class IndexPresenter {
     this.#points = [...this.#pointsModel.points];
     this.#offers = [...this.#offersModel.offers];
 
-    render(new filtersView(), this.#filtersContainer);
+    this.#renderFilters();
     if(this.#points.length){
+      this.#renderSort();
       this.#renderPoints();
     } else {
       this.#renderEmptyMessage();
     }
   };
 
-  #renderPoint = (point)=> {
-    const offersOfType = this.#offers.filter((offersItem) => offersItem.type === point.type)[0];
-    const item = new listItemView();
-    const editItem = new formUpdateView(point, offersOfType.offers);
-    const pointElm = new pointView(point, offersOfType.offers);
-
-    const showForm = () => {
-      item.element.replaceChild(editItem.element, pointElm.element);
-      document.addEventListener('keydown', onEscKeyDown);
-    };
-    const hideForm = () => {
-      item.element.replaceChild(pointElm.element, editItem.element);
-    };
-    const onPointRollupBtnClick = () => {
-      showForm();
-    };
-    const onEditFormRollupBtnClick = () => {
-      hideForm();
-    };
-
-    const onEditFormSubmit = () => {
-      hideFormHandler();
-    };
-
-    function onEscKeyDown(evt) {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        hideFormHandler();
-      }
-    }
-
-    function hideFormHandler(){
-      hideForm();
-      document.removeEventListener('keydown', onEscKeyDown);
-    }
-
-    pointElm.setClickHandler(()=>{
-      onPointRollupBtnClick();
-    });
-
-    editItem.setClickHandler(()=>{
-      onEditFormRollupBtnClick();
-    });
-    editItem.setSubmitHandler(()=>{
-      onEditFormSubmit();
-    });
-
-    render(item, this.#listComponent.element);
-    render(pointElm, item.element);
-  };
-
   #renderPoints = ()=>{
-    render(new sortView(), this.#contentContainer);
     render(this.#listComponent, this.#contentContainer);
 
     for (let i = 0; i < this.#points.length; i++) {
@@ -96,8 +46,37 @@ export default class IndexPresenter {
     }
   };
 
+  #renderPoint = (point)=> {
+    const offersOfType = this.#offers.filter((offersItem) => offersItem.type === point.type)[0];
+    const pointPresenter = new PointPresenter(this.#listComponent, this.#handlePointChange, this.#handleModeChange);
+    pointPresenter.init(point, offersOfType.offers);
+    this.#pointPresenter.set(point.id, pointPresenter);
+  };
+
+  #renderFilters = ()=>{
+    render(new filtersView(), this.#filtersContainer);
+  };
+
   #renderEmptyMessage = ()=>{
-    this.#emptyMessageElm = new EmptyMessageView();
     render(this.#emptyMessageElm, this.#contentContainer);
+  };
+
+  #renderSort = ()=>{
+    render(new sortView(), this.#contentContainer);
+  };
+
+  #handleModeChange = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #handlePointChange = (updatedPoint)=> {
+    this.#points = updateItem(this.#points, updatedPoint);
+    this.#clearPoints();
+    this.#renderPoints();
+  };
+
+  #clearPoints = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.destroy());
+    this.#pointPresenter.clear();
   };
 }
