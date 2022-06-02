@@ -113,7 +113,6 @@ export default class PointPresenter {
   };
 
   resetView = () => {
-    console.log('reset view', this.#mode);
     if (this.#mode !== Mode.DEFAULT) {
       this.#editItem.reset(this.#point, this.#filteredOffers);
       this.#hideFormHandler();

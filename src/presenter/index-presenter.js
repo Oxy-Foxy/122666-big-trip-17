@@ -65,7 +65,6 @@ export default class IndexPresenter {
   };
 
   #handleModeChange = () => {
-    console.log('handleModeChange');
     this.#pointPresenter.forEach((presenter) => presenter.resetView());
   };
 
