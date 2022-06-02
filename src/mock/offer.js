@@ -19,11 +19,11 @@ export const generateOffers = ()=> (
       offers: [
         {
           id: 1,
-          title: 'Add luggage',
+          title: 'Add baggage',
           price: 50
         }, {
           id: 2,
-          title: 'Switch to comfort',
+          title: 'Second floor',
           price: 80
         }
       ]
@@ -37,7 +37,7 @@ export const generateOffers = ()=> (
           price: 50
         }, {
           id: 2,
-          title: 'Switch to comfort',
+          title: 'Switch to comfort class',
           price: 80
         }
       ]
@@ -47,11 +47,11 @@ export const generateOffers = ()=> (
       offers: [
         {
           id: 1,
-          title: 'Add luggage',
+          title: 'Add baggage',
           price: 50
         }, {
           id: 2,
-          title: 'Switch to comfort',
+          title: 'First class',
           price: 80
         }
       ]
@@ -65,7 +65,7 @@ export const generateOffers = ()=> (
           price: 50
         }, {
           id: 2,
-          title: 'Switch to comfort',
+          title: 'Personal driver',
           price: 80
         }
       ]
