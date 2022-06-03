@@ -1,7 +1,6 @@
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {getformDateTime} from '../utils';
 import { getTypes } from '../mock/types';
-
 
 const getTypesItems = (point)=>{
   const offerTypes = getTypes();
@@ -45,7 +44,9 @@ const getTypeOffers = (offers, pointOffers)=>{
   return result;
 };
 
-const createNewFormUpdateTemplate = (point, filteredOffers) => {
+const createNewFormUpdateTemplate = (state) => {
+  const point = state.point;
+  const filteredOffers = state.offers;
   const type = point.type;
   const typesItems = getTypesItems(point);
   const destinationName = point.destination.name;
@@ -127,17 +128,24 @@ const createNewFormUpdateTemplate = (point, filteredOffers) => {
   </form>`;
 };
 
-export default class FormUpdateView extends AbstractView {
-  #point = null;
+export default class FormUpdateView extends AbstractStatefulView {
   #offers = null;
-  constructor(point, offers){
+  #filteredOffers = null;
+  #destinations = null;
+  #typeRadios = null;
+  constructor(point, offers, destinations){
     super();
-    this.#point = point;
+    this.#destinations = destinations;
     this.#offers = offers;
+    this.#filteredOffers = this.#filterOffers(point, this.#offers);
+    this._state = FormUpdateView.parsePointToState(point, this.#filteredOffers);
+    this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createNewFormUpdateTemplate(this.#point, this.#offers);
+    return createNewFormUpdateTemplate(this._state);
   }
 
   setClickHandler = (callback)=>{
@@ -157,6 +165,47 @@ export default class FormUpdateView extends AbstractView {
 
   #submitHandler = (evt)=>{
     evt.preventDefault();
-    this._callback.submit();
+    this._callback.submit(FormUpdateView.parseStateToPoint(this._state));
   };
+
+  #typeChangeHandler = (evt)=>{
+    evt.preventDefault();
+    const typeRadioId = evt.target.getAttribute('for');
+    const typeRadioInput = this.#typeRadios.filter((elm) => elm.id === typeRadioId)[0];
+    if(!typeRadioInput) {return;}
+    const type = typeRadioInput.value;
+    this.updateElement({point: {...this._state.point, type}});
+    this.#filteredOffers = this.#filterOffers(this._state.point, this.#offers);
+    this.updateElement({offers: this.#filteredOffers});
+  };
+
+  #destinationChangeHandler = (evt) => {
+    evt.preventDefault();
+    const newDestinationName = evt.target.value;
+    const destination = this.#destinations.filter((item) => item.name === newDestinationName)[0];
+    this.updateElement({point: {...this._state.point, destination}});
+  };
+
+  #setInnerHandlers = ()=>{
+    this.element.querySelector('.event__type-group').addEventListener('click', this.#typeChangeHandler);
+    this.element.querySelector('.event__input').addEventListener('change', this.#destinationChangeHandler);
+  };
+
+  _restoreHandlers = ()=>{
+    this.#setInnerHandlers();
+    this.setSubmitHandler(this._callback.submit);
+    this.setClickHandler(this._callback.click);
+  };
+
+  reset = (point, offers)=>{
+    this.updateElement(FormUpdateView.parsePointToState(point, offers));
+  };
+
+  static parsePointToState = (point, offers) => ({point: {...point}, offers: [...offers]});
+  static parseStateToPoint = (state)=>{
+    const point = {...state};
+    return point;
+  };
+
+  #filterOffers = (point, offers) => offers.filter((offersItem) => offersItem.type === point.type)[0].offers;
 }

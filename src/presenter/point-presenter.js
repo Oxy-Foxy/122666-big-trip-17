@@ -1,7 +1,9 @@
 import listItemView from '../view/list-item-view';
 import pointView from '../view/point-view';
 import formUpdateView from '../view/form-update-view';
+import DestinationModel from '../model/destination-model';
 import {render, replace, remove} from '../framework/render';
+
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -10,7 +12,9 @@ const Mode = {
 
 export default class PointPresenter {
   #point = null;
+  #destinations = null;
   #offers= null;
+  #filteredOffers = null;
   #listComponent = null;
   #listItem = null;
   #editItem = null;
@@ -27,12 +31,15 @@ export default class PointPresenter {
 
   init = (point, offers) => {
     this.#point = point;
+    this.#destinations = new DestinationModel().getDestination();
+    this.#point.destination = this.#destinations.filter((item) => item.name === this.#point.destination)[0];
     this.#offers = offers;
+    this.#filteredOffers = this.#filterOffers(this.#point, offers);
     const prevPointElm = this.#pointElm;
     const prevEditItem = this.#editItem;
     this.#listItem = new listItemView();
-    this.#editItem = new formUpdateView(this.#point, this.#offers);
-    this.#pointElm = new pointView(this.#point, this.#offers);
+    this.#editItem = new formUpdateView(this.#point, this.#offers, this.#destinations);
+    this.#pointElm = new pointView(this.#point, this.#filteredOffers);
 
     this.#pointElm.setClickHandler(()=>{
       this.#onPointRollupBtnClick();
@@ -57,19 +64,21 @@ export default class PointPresenter {
     if (this.#mode === Mode.EDITING) {
       replace(this.#editItem, prevEditItem);
     }
+
     remove(prevPointElm);
     remove(prevEditItem);
   };
 
   #showForm = () => {
-    this.#listItem.element.replaceChild(this.#editItem.element, this.#pointElm.element);
+    replace(this.#editItem, this.#pointElm);
     document.addEventListener('keydown', this.#onEscKeyDown);
     this.#changeMode();
     this.#mode = Mode.EDITING;
   };
 
   #hideForm = () => {
-    this.#listItem.element.replaceChild(this.#pointElm.element, this.#editItem.element);
+    replace(this.#pointElm, this.#editItem);
+    document.removeEventListener('keydown', this.#onEscKeyDown);
     this.#mode = Mode.DEFAULT;
   };
 
@@ -78,7 +87,7 @@ export default class PointPresenter {
   };
 
   #onEditFormRollupBtnClick = () => {
-    this.#hideForm();
+    this.#hideFormHandler();
   };
 
   #onEditFormSubmit = () => {
@@ -92,6 +101,7 @@ export default class PointPresenter {
   };
 
   #hideFormHandler(){
+    this.#editItem.reset(this.#point, this.#filteredOffers);
     this.#hideForm();
     document.removeEventListener('keydown', this.#onEscKeyDown);
   }
@@ -104,11 +114,14 @@ export default class PointPresenter {
 
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#hideForm();
+      this.#editItem.reset(this.#point, this.#filteredOffers);
+      this.#hideFormHandler();
     }
   };
 
   #handleFavoriteClick = ()=> {
     this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
   };
+
+  #filterOffers = (point, offers) => offers.filter((offersItem) => offersItem.type === point.type)[0].offers;
 }

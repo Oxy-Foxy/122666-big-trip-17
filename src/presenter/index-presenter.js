@@ -47,9 +47,8 @@ export default class IndexPresenter {
   };
 
   #renderPoint = (point)=> {
-    const offersOfType = this.#offers.filter((offersItem) => offersItem.type === point.type)[0];
     const pointPresenter = new PointPresenter(this.#listComponent, this.#handlePointChange, this.#handleModeChange);
-    pointPresenter.init(point, offersOfType.offers);
+    pointPresenter.init(point, this.#offers);
     this.#pointPresenter.set(point.id, pointPresenter);
   };
 
