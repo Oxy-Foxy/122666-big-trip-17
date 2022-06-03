@@ -87,7 +87,7 @@ export default class PointPresenter {
   };
 
   #onEditFormRollupBtnClick = () => {
-    this.#hideForm();
+    this.#hideFormHandler();
   };
 
   #onEditFormSubmit = () => {
@@ -96,12 +96,12 @@ export default class PointPresenter {
 
   #onEscKeyDown = (evt)=> {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
-      this.#editItem.reset(this.#point, this.#filteredOffers);
       this.#hideFormHandler();
     }
   };
 
   #hideFormHandler(){
+    this.#editItem.reset(this.#point, this.#filteredOffers);
     this.#hideForm();
     document.removeEventListener('keydown', this.#onEscKeyDown);
   }
