@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-
+import {FilterType} from './enums';
 
 const getShortDate = (date) => dayjs(date).format('MMM D');
 const getDate = (date) => dayjs(date).format('YYYY-MM-D');
@@ -10,20 +10,14 @@ const getDifference = (date1, date2) => {
   const minutes = totalMinutes%60;
   return `${hours}h ${minutes}m`;
 };
-const getformDateTime = (date) => dayjs(date).format('DD/MM/YY HH:mm');
+const getformDateTime = (date) => date ? dayjs(date).format('DD/MM/YY HH:mm') : dayjs();
+const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'd') < 0;
+const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'd') >= 0;
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
+const filter = {
+  [FilterType.EVERYTHING]: (points) => points,
+  [FilterType.FUTURE]: (points) => points.filter((point) => isFuture(point.dateFrom)),
+  [FilterType.PAST]: (points) => points.filter((point) => isPast(point.dateTo)),
 };
 
-export { getShortDate, getDate, getTime, getDifference, getformDateTime, updateItem};
+export { getShortDate, getDate, getTime, getDifference, getformDateTime, isPast, isFuture, filter};
