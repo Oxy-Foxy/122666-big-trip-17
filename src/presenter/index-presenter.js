@@ -3,6 +3,7 @@ import listView from '../view/list-view';
 import EmptyMessageView from '../view/empty-message-view';
 import PointPresenter from './point-presenter';
 import NewPointPresenter from './new-point-presenter';
+import LoadingView from '../view/loading-view.js';
 import {render, remove} from '../framework/render';
 import {filter} from '../utils.js';
 import {UpdateType, UserAction, FilterType} from '../enums.js';
@@ -10,24 +11,32 @@ import {UpdateType, UserAction, FilterType} from '../enums.js';
 const contentContainer = document.querySelector('.trip-events');
 
 export default class IndexPresenter {
-  #listComponent = null;
+  #loadingComponent = new LoadingView();
+  #listComponent = new listView();
+  #sortComponent = new sortView();
   #contentContainer = null;
   #pointsModel = null;
   #offersModel = null;
+  #destinationsModel = null;
   #filterModel = null;
   #emptyMessageElm = null;
   #offers = [];
+  #destinations = [];
   #filterType = FilterType.EVERYTHING;
   #pointPresenter = new Map();
   #newPointPresenter = null;
+  #isLoading = true;
+  #enableNewPointBtn = null;
 
-  constructor(pointsModel, offersModel, filterModel) {
+  constructor(pointsModel, offersModel, filterModel, destinationsModel) {
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
+    this.#destinationsModel = destinationsModel;
     this.#filterModel = filterModel;
-    this.#listComponent = new listView();
     this.#newPointPresenter = new NewPointPresenter(this.#listComponent, this.#handleViewAction);
     this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#offersModel.addObserver(this.#handleModelEvent);
+    this.#destinationsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
@@ -38,23 +47,43 @@ export default class IndexPresenter {
     return filteredPoints;
   }
 
-  init = () => {
+  init = (callback) => {
+    this.#enableNewPointBtn = callback;
     this.#contentContainer = contentContainer;
     this.#offers = [...this.#offersModel.offers];
+    this.#destinations = [...this.#destinationsModel.destinations];
+    this.#renderPage();
+  };
 
+  createPoint = () => {
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newPointPresenter.init(this.#enableNewPointBtn,this.#offers, this.#destinations);
+  };
 
+  #renderPage = ()=>{
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
+    if(!this.#offers.length || !this.#destinations.length) {
+      this.#renderErrorMessage();
+      return;
+    }
+
+    this.#enableNewPointBtn();
     if(!this.points.length){
       this.#renderEmptyMessage();
       return;
     }
+
     this.#renderSort();
     this.#renderPoints();
   };
 
-  createPoint = (callback) => {
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newPointPresenter.init(callback);
-  };
+  #renderErrorMessage(){
+    console.log('error');
+  }
 
   #renderPoints = ()=>{
     const points = this.points;
@@ -67,17 +96,22 @@ export default class IndexPresenter {
 
   #renderPoint = (point)=> {
     const pointPresenter = new PointPresenter(this.#listComponent, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(point, this.#offers);
+    pointPresenter.init(point, this.#offers, this.#destinations);
     this.#pointPresenter.set(point.id, pointPresenter);
   };
 
   #renderEmptyMessage = ()=>{
     this.#emptyMessageElm = new EmptyMessageView(this.#filterType);
+    remove(this.#loadingComponent);
     render(this.#emptyMessageElm, this.#contentContainer);
   };
 
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#contentContainer);
+  };
+
   #renderSort = ()=>{
-    render(new sortView(), this.#contentContainer);
+    render(this.#sortComponent, this.#contentContainer);
   };
 
   #handleModeChange = () => {
@@ -91,6 +125,9 @@ export default class IndexPresenter {
     this.#pointPresenter.clear();
     if (this.#emptyMessageElm) {
       remove(this.#emptyMessageElm);
+    }
+    if(this.#sortComponent){
+      remove(this.#sortComponent);
     }
   };
 
@@ -110,16 +147,23 @@ export default class IndexPresenter {
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
+      case UpdateType.INIT:
+        this.#offers = [...this.#offersModel.offers];
+        this.#destinations = [...this.#destinationsModel.destinations];
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderPage();
+        break;
       case UpdateType.PATCH:
         this.#pointPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         this.#clearPoints();
-        this.#renderPoints();
+        this.#renderPage();
         break;
       case UpdateType.MAJOR:
         this.#clearPoints();
-        this.#renderPoints();
+        this.#renderPage();
         break;
     }
   };

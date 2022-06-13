@@ -2,6 +2,17 @@ import listItemView from '../view/list-item-view';
 import FormUpdateView from '../view/form-update-view';
 import {render, remove} from '../framework/render';
 import {UserAction, UpdateType} from '../enums.js';
+import {getformDateTime} from '../utils';
+
+const BLANK_POINT = {
+  basePrice: 0,
+  dateFrom: getformDateTime(),
+  dateTo: getformDateTime(),
+  destination:null,
+  isFavorite: false,
+  offers:[],
+  type:''
+};
 
 export default class PointPresenter {
   #listComponent = null;
@@ -15,13 +26,13 @@ export default class PointPresenter {
     this.#changeData = changeData;
   }
 
-  init = (callback) => {
+  init = (callback,offers,destinations) => {
     if (this.#newPointForm !== null) {
       return;
     }
 
     this.#listItem = new listItemView();
-    this.#newPointForm = new FormUpdateView();
+    this.#newPointForm = new FormUpdateView(BLANK_POINT,offers,destinations);
     this.#destroyCallback = callback;
 
     this.#newPointForm.setClickHandler(()=>{
@@ -46,6 +57,7 @@ export default class PointPresenter {
       return;
     }
 
+
     this.#destroyCallback?.();
     remove(this.#newPointForm);
     remove(this.#listItem);
@@ -58,7 +70,7 @@ export default class PointPresenter {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      {id: 1, ...update},
+      {...update},
     );
     this.destroy();
   };

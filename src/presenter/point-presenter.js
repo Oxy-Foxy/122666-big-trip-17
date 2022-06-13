@@ -1,8 +1,6 @@
 import listItemView from '../view/list-item-view';
 import pointView from '../view/point-view';
 import formUpdateView from '../view/form-update-view';
-import DestinationModel from '../model/destination-model';
-import {generateOffers} from '../mock/offer';
 import {render, replace, remove} from '../framework/render';
 import {UserAction, UpdateType, Mode} from '../enums.js';
 import {isPast, isFuture} from '../utils.js';
@@ -26,11 +24,11 @@ export default class PointPresenter {
     this.#changeMode = changeMode;
   }
 
-  init = (point) => {
+  init = (point, offers, destinations) => {
     this.#point = point;
-    this.#destinations = new DestinationModel().getDestination();
+    this.#destinations = destinations;
     this.#point.destination = typeof this.#point.destination === 'string' ? this.#destinations.filter((item) => item.name === this.#point.destination)[0] : this.#point.destination;
-    this.#offers = generateOffers();
+    this.#offers = offers;
     this.#filteredOffers = this.#filterOffers(this.#point);
     const prevPointElm = this.#pointElm;
     const prevEditItem = this.#editItem;
