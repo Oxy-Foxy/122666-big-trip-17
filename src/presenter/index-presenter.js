@@ -142,7 +142,7 @@ export default class IndexPresenter {
     this.#newPointPresenter.destroy();
   };
 
-  #clearPoints = ({resetSortType = false}) => {
+  #clearPoints = ({resetSortType = false}={}) => {
     this.#newPointPresenter.destroy();
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
@@ -163,6 +163,7 @@ export default class IndexPresenter {
         this.#pointsModel.updatePoint(updateType, point);
         break;
       case UserAction.ADD_POINT:
+        // console.log(point);
         this.#pointsModel.addPoint(updateType, point);
         break;
       case UserAction.DELETE_POINT:

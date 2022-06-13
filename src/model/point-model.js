@@ -1,5 +1,5 @@
-import { UpdateType } from '../enums.js';
-import Observable from '../framework/observable.js';
+import { UpdateType } from '../enums';
+import Observable from '../framework/observable';
 
 export default class PointsModel extends Observable {
   #pointsApiService = null;

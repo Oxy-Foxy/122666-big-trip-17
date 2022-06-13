@@ -1,5 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {PointTypes} from '../enums';
+import {getformDateTime} from '../utils';
 
 const getDestinationsOptions = (destinations)=>{
   const destinationsNames = destinations.map((destination) => destination.name);
@@ -61,8 +62,8 @@ const createNewFormUpdateTemplate = (state, destinations) => {
   const destinationName = point.destination ? point.destination.name : '';
   const price = point.basePrice;
   const description = point.destination ? point.destination.description : '';
-  const startDateTime = point.dateFrom;
-  const endDateTime = point.dateTo;
+  const startDateTime = getformDateTime(point.dateFrom);
+  const endDateTime = getformDateTime(point.dateTo);
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
   const images = point.destination ? getImages(point.destination.pictures) : [];
