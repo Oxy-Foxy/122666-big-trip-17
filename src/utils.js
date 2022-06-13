@@ -4,8 +4,9 @@ import {FilterType} from './enums';
 const getShortDate = (date) => dayjs(date).format('MMM D');
 const getDate = (date) => dayjs(date).format('YYYY-MM-D');
 const getTime = (date) => dayjs(date).format('HH:mm');
+const getDifferenceInMinutes = (date1, date2) => Math.abs(dayjs(date1).diff(dayjs(date2), 'm'));
 const getDifference = (date1, date2) => {
-  const totalMinutes = Math.abs(dayjs(date1).diff(dayjs(date2), 'm'));
+  const totalMinutes = getDifferenceInMinutes(date1, date2);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes%60;
   return `${hours}h ${minutes}m`;
@@ -20,4 +21,8 @@ const filter = {
   [FilterType.PAST]: (points) => points.filter((point) => isPast(point.dateTo)),
 };
 
-export { getShortDate, getDate, getTime, getDifference, getformDateTime, isPast, isFuture, filter};
+const sortByDate = (pointA, pointB)=> dayjs(pointB.dateFrom).diff(dayjs(pointA.dateFrom));
+const sortByDuration = (pointA, pointB)=>getDifferenceInMinutes(pointB.dateFrom, pointB.dateTo) - getDifferenceInMinutes(pointA.dateFrom, pointA.dateTo);
+const sortByPrice = (pointA, pointB)=> pointB.basePrice - pointA.basePrice;
+
+export { getShortDate, getDate, getTime, getDifference, getformDateTime, isPast, isFuture, filter, sortByDate, sortByDuration, sortByPrice};

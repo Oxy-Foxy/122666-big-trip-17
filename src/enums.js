@@ -24,6 +24,42 @@ const Mode = {
   EDITING: 'EDITING',
 };
 
+const SortVariants = {
+  DAY: 'day',
+  DURATION: 'duration',
+  PRICE: 'price'
+};
+
+const SortTypes =
+  [
+    {
+      name: 'Day',
+      type: 'day',
+      checked: true,
+      sortBy: SortVariants.DAY
+    },
+    {
+      name: 'Event',
+      type: 'event',
+      disabled: true
+    },
+    {
+      name: 'Time',
+      type: 'time',
+      sortBy: SortVariants.DURATION
+    },
+    {
+      name: 'Price',
+      type: 'price',
+      sortBy: SortVariants.PRICE
+    },
+    {
+      name: 'Offer',
+      type: 'offer',
+      disabled: true
+    },
+  ];
+
 const PointTypes = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
-export {UserAction, UpdateType, FilterType, Mode, PointTypes};
+export {UserAction, UpdateType, FilterType, Mode, PointTypes, SortTypes, SortVariants};

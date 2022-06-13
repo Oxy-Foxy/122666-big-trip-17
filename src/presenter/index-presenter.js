@@ -1,4 +1,4 @@
-import sortView from '../view/sort-view';
+import SortView from '../view/sort-view';
 import listView from '../view/list-view';
 import EmptyMessageView from '../view/empty-message-view';
 import PointPresenter from './point-presenter';
@@ -7,9 +7,9 @@ import LoadingView from '../view/loading-view.js';
 import ErrorView from '../view/error-view.js';
 import FilterModel from '../model/filter-model.js';
 import FilterPresenter from '../presenter/filter-presenter.js';
-import {render, remove} from '../framework/render';
-import {filter} from '../utils.js';
-import {UpdateType, UserAction, FilterType} from '../enums.js';
+import {render, remove, RenderPosition} from '../framework/render';
+import {filter, sortByDate, sortByDuration, sortByPrice} from '../utils.js';
+import {UpdateType, UserAction, FilterType, SortVariants} from '../enums.js';
 
 const contentContainer = document.querySelector('.trip-events');
 
@@ -17,7 +17,7 @@ export default class IndexPresenter {
   #loadingComponent = new LoadingView();
   #errorComponent = new ErrorView();
   #listComponent = new listView();
-  #sortComponent = new sortView();
+  #sortComponent = new SortView();
   #filtersModel = new FilterModel();
   #filterPresenter = null;
   #contentContainer = null;
@@ -33,6 +33,7 @@ export default class IndexPresenter {
   #isLoading = true;
   #enableNewPointBtn = null;
   #resourses = {};
+  #currentSortType = SortVariants.DAY;
 
   constructor(pointsModel, offersModel, destinationsModel) {
     this.#pointsModel = pointsModel;
@@ -50,6 +51,15 @@ export default class IndexPresenter {
     this.#filterType = this.#filtersModel.filter;
     const points = this.#pointsModel.points;
     const filteredPoints = filter[this.#filterType](points);
+
+    switch (this.#currentSortType) {
+      case SortVariants.DAY:
+        return filteredPoints.sort(sortByDate);
+      case SortVariants.DURATION:
+        return filteredPoints.sort(sortByDuration);
+      case SortVariants.PRICE:
+        return filteredPoints.sort(sortByPrice);
+    }
     return filteredPoints;
   }
 
@@ -62,6 +72,7 @@ export default class IndexPresenter {
   };
 
   createPoint = () => {
+    this.#currentSortType = SortVariants.DAY;
     this.#filtersModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#newPointPresenter.init(this.#enableNewPointBtn,this.#offers, this.#destinations);
   };
@@ -111,7 +122,19 @@ export default class IndexPresenter {
   };
 
   #renderSort = ()=>{
-    render(this.#sortComponent, this.#contentContainer);
+    this.#sortComponent = new SortView(this.#currentSortType);
+    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
+    render(this.#sortComponent, this.#contentContainer, RenderPosition.AFTERBEGIN);
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#currentSortType = sortType;
+    this.#clearPoints({resetSortType: false});
+    this.#renderPage();
   };
 
   #handleModeChange = () => {
@@ -119,7 +142,7 @@ export default class IndexPresenter {
     this.#newPointPresenter.destroy();
   };
 
-  #clearPoints = () => {
+  #clearPoints = ({resetSortType = false}) => {
     this.#newPointPresenter.destroy();
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
@@ -128,6 +151,9 @@ export default class IndexPresenter {
     }
     if(this.#sortComponent){
       remove(this.#sortComponent);
+    }
+    if (resetSortType) {
+      this.#currentSortType = SortVariants.DAY;
     }
   };
 
@@ -169,7 +195,7 @@ export default class IndexPresenter {
         this.#renderPage();
         break;
       case UpdateType.MAJOR:
-        this.#clearPoints();
+        this.#clearPoints({resetSortType: true});
         this.#renderPage();
         break;
     }
