@@ -1,6 +1,30 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {getformDateTime} from '../utils';
 import { getTypes } from '../mock/types';
+import {generateOffers} from '../mock/offer';
+import {getDestinations} from '../mock/destinations';
+import { generateDestination } from '../mock/destination';
+
+const BLANK_POINT = {
+  basePrice: 0,
+  dateFrom: '',
+  dateTo: '',
+  destination:null,
+  id:null,
+  isFavorite: false,
+  offers:[],
+  type:''
+};
+
+const getDestinationsOptions = ()=>{
+  const destinations = getDestinations();
+  let result;
+
+  destinations.forEach((item)=>{
+    result+=`<option value="${item}"></option>`;
+  });
+  return result;
+};
 
 const getTypesItems = (point)=>{
   const offerTypes = getTypes();
@@ -33,8 +57,8 @@ const getTypeOffers = (offers, pointOffers)=>{
   offers.forEach((offer) => {
     const checked = pointOffers.includes(offer.id) ? 'checked': '';
     result += `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal" ${checked}>
-    <label class="event__offer-label" for="event-offer-meal-1">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-${offer.id}" type="checkbox" name="event-offer-meal" ${checked}>
+    <label class="event__offer-label" for="event-offer-meal-${offer.id}">
       <span class="event__offer-title">${offer.title}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${offer.price}</span>
@@ -48,22 +72,24 @@ const createNewFormUpdateTemplate = (state) => {
   const point = state.point;
   const filteredOffers = state.offers;
   const type = point.type;
+  const typeIcon = type ? `"img/icons/${type}.png"`: 'img/icons/taxi.png';
   const typesItems = getTypesItems(point);
-  const destinationName = point.destination.name;
+  const destinationName = point.destination ? point.destination.name : '';
   const price = point.basePrice;
-  const description = point.destination.description;
+  const description = point.destination ? point.destination.description : '';
   const startDateTime = getformDateTime(point.dateFrom);
   const endDateTime = getformDateTime(point.dateTo);
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
-  const images = getImages(point.destination.pictures);
+  const images = point.destination ? getImages(point.destination.pictures) : [];
+  const destinations = getDestinationsOptions();
   return `
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
           <span class="visually-hidden">Choose event type</span>
-          <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+          <img class="event__type-icon" width="17" height="17" src=${typeIcon} alt="Event type icon">
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -82,9 +108,7 @@ const createNewFormUpdateTemplate = (state) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
         <datalist id="destination-list-1">
-          <option value="Amsterdam"></option>
-          <option value="Geneva"></option>
-          <option value="Chamonix"></option>
+          ${destinations}
         </datalist>
       </div>
 
@@ -133,11 +157,12 @@ export default class FormUpdateView extends AbstractStatefulView {
   #filteredOffers = null;
   #destinations = null;
   #typeRadios = null;
-  constructor(point, offers, destinations){
+
+  constructor(point = BLANK_POINT){
     super();
-    this.#destinations = destinations;
-    this.#offers = offers;
-    this.#filteredOffers = this.#filterOffers(point, this.#offers);
+    this.#destinations = generateDestination();
+    this.#offers = generateOffers();
+    this.#filteredOffers = this.#filterOffers(point);
     this._state = FormUpdateView.parsePointToState(point, this.#filteredOffers);
     this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
 
@@ -158,6 +183,11 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.element.addEventListener('submit',this.#submitHandler);
   };
 
+  setDeleteClickHandler = (callback)=>{
+    this._callback.delete = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteHandler);
+  };
+
   #clickHandler = (evt)=>{
     evt.preventDefault();
     this._callback.click();
@@ -166,6 +196,11 @@ export default class FormUpdateView extends AbstractStatefulView {
   #submitHandler = (evt)=>{
     evt.preventDefault();
     this._callback.submit(FormUpdateView.parseStateToPoint(this._state));
+  };
+
+  #deleteHandler = (evt)=>{
+    evt.preventDefault();
+    this._callback.delete(FormUpdateView.parseStateToPoint(this._state));
   };
 
   #typeChangeHandler = (evt)=>{
@@ -186,15 +221,31 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.updateElement({point: {...this._state.point, destination}});
   };
 
+  #priceInputHandler = (evt)=>{
+    const newPrice = evt.target.value;
+    if(!/^[0-9]+$/.test(newPrice) && newPrice !== ''){
+      evt.target.value = '';
+    }
+  };
+
+  #priceChangeHandler = (evt)=>{
+    evt.preventDefault();
+    const newPrice = evt.target.value;
+    this.updateElement({point: {...this._state.point, basePrice:newPrice}});
+  };
+
   #setInnerHandlers = ()=>{
     this.element.querySelector('.event__type-group').addEventListener('click', this.#typeChangeHandler);
-    this.element.querySelector('.event__input').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('#event-destination-1').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('#event-price-1').addEventListener('change', this.#priceChangeHandler);
+    this.element.querySelector('#event-price-1').addEventListener('input', this.#priceInputHandler);
   };
 
   _restoreHandlers = ()=>{
     this.#setInnerHandlers();
     this.setSubmitHandler(this._callback.submit);
     this.setClickHandler(this._callback.click);
+    this.setDeleteClickHandler(this._callback.delete);
   };
 
   reset = (point, offers)=>{
@@ -207,5 +258,5 @@ export default class FormUpdateView extends AbstractStatefulView {
     return point;
   };
 
-  #filterOffers = (point, offers) => offers.filter((offersItem) => offersItem.type === point.type)[0].offers;
+  #filterOffers = (point) => point.type ? this.#offers.filter((offersItem) => offersItem.type === point.type)[0].offers : [];
 }

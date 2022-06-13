@@ -1,15 +1,24 @@
 import AbstractView from '../framework/view/abstract-view';
+import {FilterType} from '../enums.js';
 
-const createNewEmptyMessageTemplate = (message) => `<p class="trip-events__msg">${message}</p>`;
+const emptyMessageTypes = {
+  [FilterType.EVERYTHING]:'Click New Event to create your first point',
+  [FilterType.PAST]:'No past events',
+  [FilterType.FUTURE]:'No future events',
+};
+const createNewEmptyMessageTemplate = (filterType) => {
+  const message = emptyMessageTypes[filterType];
+  return `<p class="trip-events__msg">${message}</p>`;
+};
 
 export default class EmptyMessageView extends AbstractView {
-  #message = 'Click New Event to create your first point';
-  constructor(incomingMessage){
+  #filterType = null;
+  constructor(filterType){
     super();
-    this.#message = incomingMessage ? incomingMessage : this.#message;
+    this.#filterType = filterType;
   }
 
   get template() {
-    return createNewEmptyMessageTemplate(this.#message);
+    return createNewEmptyMessageTemplate(this.#filterType);
   }
 }
