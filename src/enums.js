@@ -8,7 +8,9 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
-  INIT: 'INIT'
+  INIT_OFFERS:'INIT_OFFERS',
+  INIT_POINTS:'INIT_POINTS',
+  INIT_DESTINATIONS:'INIT_DESTINATIONS'
 };
 
 const FilterType = {

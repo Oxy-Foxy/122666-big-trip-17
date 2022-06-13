@@ -43,11 +43,11 @@ export default class PointPresenter {
     this.#editItem.setClickHandler(()=>{
       this.#onEditFormRollupBtnClick();
     });
-    this.#editItem.setSubmitHandler((update)=>{
-      this.#onEditFormSubmit(update);
+    this.#editItem.setSubmitHandler((state)=>{
+      this.#onEditFormSubmit(state.point);
     });
-    this.#editItem.setDeleteClickHandler((update)=>{
-      this.#onDeleteClick(update);
+    this.#editItem.setDeleteClickHandler((state)=>{
+      this.#onDeleteClick(state.point);
     });
     this.#pointElm.setFavoriteClickHandler(this.#handleFavoriteClick);
 
@@ -88,21 +88,21 @@ export default class PointPresenter {
     this.#hideFormHandler();
   };
 
-  #onEditFormSubmit = (update) => {
-    const isMinorUpdate = isPast(this.#point.dateTo) === isPast(update.point.dateTo) && isFuture(this.#point.dateFrom) === isFuture(update.point.dateFrom);
+  #onEditFormSubmit = (point) => {
+    const isMinorUpdate = isPast(this.#point.dateTo) === isPast(point.dateTo) && isFuture(this.#point.dateFrom) === isFuture(point.dateFrom);
     this.#changeData(
       UserAction.UPDATE_POINT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
-      update,
+      point,
     );
     this.#hideFormHandler();
   };
 
-  #onDeleteClick = (update) => {
+  #onDeleteClick = (point) => {
     this.#changeData(
       UserAction.DELETE_POINT,
       UpdateType.MINOR,
-      update.point,
+      point,
     );
   };
 

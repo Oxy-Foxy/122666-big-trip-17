@@ -1,9 +1,7 @@
 import PointsModel from './model/point-model';
 import OffersModel from './model/offer-model';
 import DestinationsModel from './model/destination-model';
-import FilterModel from './model/filter-model.js';
 import IndexPresenter from './presenter/index-presenter';
-import FilterPresenter from './presenter/filter-presenter.js';
 import PointsApiService from './api/points.js';
 import OffersApiService from './api/offers.js';
 import DestinationsApiService from './api/destinations.js';
@@ -14,10 +12,9 @@ const END_POINT = 'https://17.ecmascript.pages.academy/big-trip';
 const pointsModel = new PointsModel(new PointsApiService(END_POINT, AUTHORIZATION));
 const offersModel = new OffersModel(new OffersApiService(END_POINT, AUTHORIZATION));
 const destinationsModel = new DestinationsModel(new DestinationsApiService(END_POINT, AUTHORIZATION));
-const filterModel = new FilterModel();
 
-const indexPresenter = new IndexPresenter(pointsModel, offersModel, filterModel, destinationsModel);
-const filterPresenter = new FilterPresenter(filterModel, pointsModel);
+const indexPresenter = new IndexPresenter(pointsModel, offersModel, destinationsModel);
+
 
 const newPointBtn = document.querySelector('.trip-main__event-add-btn');
 
@@ -33,7 +30,6 @@ const handleNewPointButtonClick = () => {
 newPointBtn.addEventListener('click', handleNewPointButtonClick);
 
 indexPresenter.init(handleNewPointFormClose);
-filterPresenter.init();
 offersModel.init();
 destinationsModel.init();
 pointsModel.init();

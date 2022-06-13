@@ -38,11 +38,11 @@ export default class PointPresenter {
     this.#newPointForm.setClickHandler(()=>{
       this.#onEditFormRollupBtnClick();
     });
-    this.#newPointForm.setSubmitHandler((update)=>{
-      this.#onEditFormSubmit(update);
+    this.#newPointForm.setSubmitHandler((state)=>{
+      this.#onEditFormSubmit(state.point);
     });
-    this.#newPointForm.setDeleteClickHandler((update)=>{
-      this.#onDeleteClick(update);
+    this.#newPointForm.setDeleteClickHandler(()=>{
+      this.#onDeleteClick();
     });
 
     render(this.#listItem, this.#listComponent.element, 'afterbegin');
@@ -66,11 +66,11 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#onEscKeyDown);
   };
 
-  #onEditFormSubmit = (update) => {
+  #onEditFormSubmit = (point) => {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      {...update},
+      {...point},
     );
     this.destroy();
   };

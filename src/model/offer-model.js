@@ -20,6 +20,6 @@ export default class OffersModel extends Observable{
     } catch(err) {
       this.#offers = [];
     }
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT_OFFERS);
   };
 }

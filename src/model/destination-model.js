@@ -20,7 +20,7 @@ export default class DestinationModel extends Observable {
     } catch(err) {
       this.#destinations = [];
     }
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT_DESTINATIONS);
   };
 
 }
