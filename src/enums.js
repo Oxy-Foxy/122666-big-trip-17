@@ -62,4 +62,9 @@ const SortTypes =
 
 const PointTypes = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
 
-export {UserAction, UpdateType, FilterType, Mode, PointTypes, SortTypes, SortVariants};
+const TimeLimit = {
+  LOWER_LIMIT: 150,
+  UPPER_LIMIT: 1000,
+};
+
+export {UserAction, UpdateType, FilterType, Mode, PointTypes, SortTypes, SortVariants, TimeLimit};

@@ -55,6 +55,37 @@ const getTypeOffers = (offers, pointOffers)=>{
   return result;
 };
 
+const getOffersSection = (typeOffers)=> {
+  if(typeOffers === '') {return '';}
+  return `<section class="event__section  event__section--offers">
+  <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+  <div class="event__available-offers">
+    ${typeOffers}
+  </div>
+</section>`;
+};
+
+const getDestinationsSection = (description, images)=>{
+  if(description === '' && images === ''){return '';}
+  return `<section class="event__section  event__section--destination">
+  <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+  <p class="event__destination-description">${description}</p>
+  ${images}
+</section>`;
+};
+
+const getSaveButton = (point)=>{
+  const text = point.isSaving ? 'Saving...' : 'Save';
+  const disabled = point.isDisabled ? 'disabled' : '';
+  return `<button class="event__save-btn  btn  btn--blue" type="submit" ${disabled}>${text}</button>`;
+};
+const getDeleteButton = (point)=>{
+  const text = point.isDeleting ? 'Deleting...' : 'Delete';
+  const disabled = point.isDisabled ? 'disabled' : '';
+  return `<button  class="event__reset-btn" type="reset" ${disabled}>${text}</button>`;
+};
+
 const createNewFormUpdateTemplate = (state, destinations) => {
   const point = state.point;
   const filteredOffers = state.offers;
@@ -68,7 +99,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
   const endDateTime = getformDateTime(point.dateTo);
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
-  const images = point.destination ? getImages(point.destination.pictures) : [];
+  const images = point.destination ? getImages(point.destination.pictures) : '';
   const destinationsItems = getDestinationsOptions(destinations);
   return `
   <form class="event event--edit" action="#" method="post">
@@ -78,7 +109,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
           <span class="visually-hidden">Choose event type</span>
           <img class="event__type-icon" width="17" height="17" src=${typeIcon} alt="Event type icon">
         </label>
-        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${point.isDisabled ? 'disabled' : ''}>
 
         <div class="event__type-list">
           <fieldset class="event__type-group">
@@ -93,7 +124,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${type}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1" ${point.isDisabled ? 'disabled' : ''}>
         <datalist id="destination-list-1">
           ${destinationsItems}
         </datalist>
@@ -101,10 +132,10 @@ const createNewFormUpdateTemplate = (state, destinations) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startDateTime}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startDateTime}" ${point.isDisabled ? 'disabled' : ''}>
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endDateTime}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endDateTime}" ${point.isDisabled ? 'disabled' : ''}>
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -112,29 +143,18 @@ const createNewFormUpdateTemplate = (state, destinations) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}" ${point.isDisabled ? 'disabled' : ''}>
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Delete</button>
-      <button class="event__rollup-btn" type="button">
+      ${getSaveButton(point)}
+      ${getDeleteButton(point)}
+      <button class="event__rollup-btn" type="button" ${point.isDisabled ? 'disabled' : ''}>
         <span class="visually-hidden">Open event</span>
       </button>
     </header>
     <section class="event__details">
-      <section class="event__section  event__section--offers">
-        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-        <div class="event__available-offers">
-          ${typeOffers}
-        </div>
-      </section>
-
-      <section class="event__section  event__section--destination">
-        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">${description}</p>
-        ${images}
-      </section>
+      ${getOffersSection(typeOffers)}
+      ${getDestinationsSection(description, images)}
     </section>
   </form>`;
 };
@@ -315,9 +335,12 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.updateElement(FormUpdateView.parsePointToState(point, offers));
   };
 
-  static parsePointToState = (point, offers) => ({point: {...point}, offers: [...offers]});
+  static parsePointToState = (point, offers) => ({point: {...point, isDisabled:false, isSaving:false, isDeleting:false}, offers: [...offers]});
   static parseStateToPoint = (state)=>{
     const point = {...state};
+    delete point.isDisabled;
+    delete point.isSaving;
+    delete point.isDeleting;
     return point;
   };
 

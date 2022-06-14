@@ -66,13 +66,36 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#onEscKeyDown);
   };
 
+  setSaving = (point) => {
+    this.#newPointForm.updateElement({
+      point: {...point,
+        isDisabled: true,
+        isSaving: true,
+      }
+    });
+  };
+
+  setAborting = (point) => {
+    const resetFormState = () => {
+      this.#newPointForm.updateElement({
+        point: {
+          ...point,
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
+      });
+    };
+
+    this.#newPointForm.shake(resetFormState);
+  };
+
   #onEditFormSubmit = (point) => {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
       {...point},
     );
-    this.destroy();
   };
 
   #onDeleteClick = () => {

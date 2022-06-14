@@ -95,7 +95,6 @@ export default class PointPresenter {
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       point,
     );
-    this.#hideFormHandler();
   };
 
   #onDeleteClick = (point) => {
@@ -133,6 +132,48 @@ export default class PointPresenter {
 
   #handleFavoriteClick = ()=> {
     this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+  };
+
+  setSaving = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#editItem.updateElement({
+        point: {...this.#point,
+          isDisabled: true,
+          isSaving: true,
+        }
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#editItem.updateElement({
+        point: {...this.#point,
+          isDisabled: true,
+          isDeleting: true,
+        }
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#editItem.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editItem.updateElement({
+        point: {
+          ...this.#point,
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
+      });
+    };
+
+    this.#editItem.shake(resetFormState);
   };
 
   #filterOffers = (point) => this.#offers.filter((offersItem) => offersItem.type === point.type)[0].offers;
