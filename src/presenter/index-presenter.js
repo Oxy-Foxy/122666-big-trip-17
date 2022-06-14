@@ -3,6 +3,10 @@ import listView from '../view/list-view';
 import EmptyMessageView from '../view/empty-message-view';
 import PointPresenter from './point-presenter';
 import NewPointPresenter from './new-point-presenter';
+import LoadingView from '../view/loading-view.js';
+import ErrorView from '../view/error-view.js';
+import FilterModel from '../model/filter-model.js';
+import FilterPresenter from '../presenter/filter-presenter.js';
 import {render, remove} from '../framework/render';
 import {filter} from '../utils.js';
 import {UpdateType, UserAction, FilterType} from '../enums.js';
@@ -10,50 +14,71 @@ import {UpdateType, UserAction, FilterType} from '../enums.js';
 const contentContainer = document.querySelector('.trip-events');
 
 export default class IndexPresenter {
-  #listComponent = null;
+  #loadingComponent = new LoadingView();
+  #errorComponent = new ErrorView();
+  #listComponent = new listView();
+  #sortComponent = new sortView();
+  #filtersModel = new FilterModel();
+  #filterPresenter = null;
   #contentContainer = null;
   #pointsModel = null;
   #offersModel = null;
-  #filterModel = null;
+  #destinationsModel = null;
   #emptyMessageElm = null;
   #offers = [];
+  #destinations = [];
   #filterType = FilterType.EVERYTHING;
   #pointPresenter = new Map();
   #newPointPresenter = null;
+  #isLoading = true;
+  #enableNewPointBtn = null;
+  #resourses = {};
 
-  constructor(pointsModel, offersModel, filterModel) {
+  constructor(pointsModel, offersModel, destinationsModel) {
     this.#pointsModel = pointsModel;
     this.#offersModel = offersModel;
-    this.#filterModel = filterModel;
-    this.#listComponent = new listView();
+    this.#destinationsModel = destinationsModel;
     this.#newPointPresenter = new NewPointPresenter(this.#listComponent, this.#handleViewAction);
+    this.#filterPresenter = new FilterPresenter(this.#filtersModel, this.#pointsModel);
     this.#pointsModel.addObserver(this.#handleModelEvent);
-    this.#filterModel.addObserver(this.#handleModelEvent);
+    this.#offersModel.addObserver(this.#handleModelEvent);
+    this.#destinationsModel.addObserver(this.#handleModelEvent);
+    this.#filtersModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
-    this.#filterType = this.#filterModel.filter;
+    this.#filterType = this.#filtersModel.filter;
     const points = this.#pointsModel.points;
     const filteredPoints = filter[this.#filterType](points);
     return filteredPoints;
   }
 
-  init = () => {
+  init = (callback) => {
+    this.#enableNewPointBtn = callback;
     this.#contentContainer = contentContainer;
     this.#offers = [...this.#offersModel.offers];
+    this.#destinations = [...this.#destinationsModel.destinations];
+    this.#renderPage();
+  };
 
+  createPoint = () => {
+    this.#filtersModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newPointPresenter.init(this.#enableNewPointBtn,this.#offers, this.#destinations);
+  };
+
+  #renderPage = ()=>{
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
 
     if(!this.points.length){
       this.#renderEmptyMessage();
       return;
     }
+
     this.#renderSort();
     this.#renderPoints();
-  };
-
-  createPoint = (callback) => {
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newPointPresenter.init(callback);
   };
 
   #renderPoints = ()=>{
@@ -67,17 +92,26 @@ export default class IndexPresenter {
 
   #renderPoint = (point)=> {
     const pointPresenter = new PointPresenter(this.#listComponent, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(point, this.#offers);
+    pointPresenter.init(point, this.#offers, this.#destinations);
     this.#pointPresenter.set(point.id, pointPresenter);
   };
 
   #renderEmptyMessage = ()=>{
     this.#emptyMessageElm = new EmptyMessageView(this.#filterType);
+    remove(this.#loadingComponent);
     render(this.#emptyMessageElm, this.#contentContainer);
   };
 
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#contentContainer);
+  };
+
+  #renderErrorComponent = () => {
+    render(this.#errorComponent, this.#contentContainer);
+  };
+
   #renderSort = ()=>{
-    render(new sortView(), this.#contentContainer);
+    render(this.#sortComponent, this.#contentContainer);
   };
 
   #handleModeChange = () => {
@@ -92,35 +126,67 @@ export default class IndexPresenter {
     if (this.#emptyMessageElm) {
       remove(this.#emptyMessageElm);
     }
+    if(this.#sortComponent){
+      remove(this.#sortComponent);
+    }
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = (actionType, updateType, point) => {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointsModel.updatePoint(updateType, update);
+        this.#pointsModel.updatePoint(updateType, point);
         break;
       case UserAction.ADD_POINT:
-        this.#pointsModel.addPoint(updateType, update);
+        this.#pointsModel.addPoint(updateType, point);
         break;
       case UserAction.DELETE_POINT:
-        this.#pointsModel.deletePoint(updateType, update);
+        this.#pointsModel.deletePoint(updateType, point);
         break;
     }
   };
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
+      case UpdateType.INIT_DESTINATIONS:
+        this.#destinations = [...this.#destinationsModel.destinations];
+        this.#resourses.destinations = true;
+        this.#checkResourses();
+        break;
+      case UpdateType.INIT_OFFERS:
+        this.#offers = [...this.#offersModel.offers];
+        this.#resourses.offers = true;
+        this.#checkResourses();
+        break;
+      case UpdateType.INIT_POINTS:
+        this.#resourses.points = true;
+        this.#checkResourses();
+        break;
       case UpdateType.PATCH:
         this.#pointPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         this.#clearPoints();
-        this.#renderPoints();
+        this.#renderPage();
         break;
       case UpdateType.MAJOR:
         this.#clearPoints();
-        this.#renderPoints();
+        this.#renderPage();
         break;
+    }
+  };
+
+  #checkResourses = () => {
+    if(!this.#resourses.offers || !this.#resourses.destinations || !this.#resourses.points) {return;}
+    this.#offers = [...this.#offersModel.offers];
+    this.#destinations = [...this.#destinationsModel.destinations];
+    this.#isLoading = false;
+    remove(this.#loadingComponent);
+    if(!this.#offers.length || !this.#destinations.length){
+      this.#renderErrorComponent();
+    } else {
+      this.#filterPresenter.init();
+      this.#enableNewPointBtn();
+      this.#renderPage();
     }
   };
 }

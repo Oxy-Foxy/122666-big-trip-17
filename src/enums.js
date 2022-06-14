@@ -8,6 +8,9 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT_OFFERS:'INIT_OFFERS',
+  INIT_POINTS:'INIT_POINTS',
+  INIT_DESTINATIONS:'INIT_DESTINATIONS'
 };
 
 const FilterType = {
@@ -21,4 +24,6 @@ const Mode = {
   EDITING: 'EDITING',
 };
 
-export {UserAction, UpdateType, FilterType, Mode};
+const PointTypes = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+
+export {UserAction, UpdateType, FilterType, Mode, PointTypes};

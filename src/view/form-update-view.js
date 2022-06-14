@@ -1,35 +1,19 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
-import {getformDateTime} from '../utils';
-import { getTypes } from '../mock/types';
-import {generateOffers} from '../mock/offer';
-import {getDestinations} from '../mock/destinations';
-import { generateDestination } from '../mock/destination';
+import {PointTypes} from '../enums';
 
-const BLANK_POINT = {
-  basePrice: 0,
-  dateFrom: '',
-  dateTo: '',
-  destination:null,
-  id:null,
-  isFavorite: false,
-  offers:[],
-  type:''
-};
-
-const getDestinationsOptions = ()=>{
-  const destinations = getDestinations();
+const getDestinationsOptions = (destinations)=>{
+  const destinationsNames = destinations.map((destination) => destination.name);
   let result;
 
-  destinations.forEach((item)=>{
+  destinationsNames.forEach((item)=>{
     result+=`<option value="${item}"></option>`;
   });
   return result;
 };
 
 const getTypesItems = (point)=>{
-  const offerTypes = getTypes();
   let result='';
-  offerTypes.forEach((type) => {
+  PointTypes.forEach((type) => {
     const checked = type === point.type ? 'checked' : '';
     result += `<div class="event__type-item">
     <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${checked}>
@@ -68,7 +52,7 @@ const getTypeOffers = (offers, pointOffers)=>{
   return result;
 };
 
-const createNewFormUpdateTemplate = (state) => {
+const createNewFormUpdateTemplate = (state, destinations) => {
   const point = state.point;
   const filteredOffers = state.offers;
   const type = point.type;
@@ -77,12 +61,12 @@ const createNewFormUpdateTemplate = (state) => {
   const destinationName = point.destination ? point.destination.name : '';
   const price = point.basePrice;
   const description = point.destination ? point.destination.description : '';
-  const startDateTime = getformDateTime(point.dateFrom);
-  const endDateTime = getformDateTime(point.dateTo);
+  const startDateTime = point.dateFrom;
+  const endDateTime = point.dateTo;
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
   const images = point.destination ? getImages(point.destination.pictures) : [];
-  const destinations = getDestinationsOptions();
+  const destinationsItems = getDestinationsOptions(destinations);
   return `
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -108,7 +92,7 @@ const createNewFormUpdateTemplate = (state) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
         <datalist id="destination-list-1">
-          ${destinations}
+          ${destinationsItems}
         </datalist>
       </div>
 
@@ -158,10 +142,10 @@ export default class FormUpdateView extends AbstractStatefulView {
   #destinations = null;
   #typeRadios = null;
 
-  constructor(point = BLANK_POINT){
+  constructor(point, offers, destinations){
     super();
-    this.#destinations = generateDestination();
-    this.#offers = generateOffers();
+    this.#destinations = destinations;
+    this.#offers = offers;
     this.#filteredOffers = this.#filterOffers(point);
     this._state = FormUpdateView.parsePointToState(point, this.#filteredOffers);
     this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
@@ -170,7 +154,7 @@ export default class FormUpdateView extends AbstractStatefulView {
   }
 
   get template() {
-    return createNewFormUpdateTemplate(this._state);
+    return createNewFormUpdateTemplate(this._state, this.#destinations);
   }
 
   setClickHandler = (callback)=>{
@@ -231,7 +215,7 @@ export default class FormUpdateView extends AbstractStatefulView {
   #priceChangeHandler = (evt)=>{
     evt.preventDefault();
     const newPrice = evt.target.value;
-    this.updateElement({point: {...this._state.point, basePrice:newPrice}});
+    this.updateElement({point: {...this._state.point, basePrice:Number(newPrice)}});
   };
 
   #setInnerHandlers = ()=>{
