@@ -4,6 +4,7 @@ import {FilterType} from './enums';
 const getShortDate = (date) => dayjs(date).format('MMM D');
 const getDate = (date) => dayjs(date).format('YYYY-MM-D');
 const getTime = (date) => dayjs(date).format('HH:mm');
+const getSimpleDifference = (date1, date2) => dayjs(date1).diff(dayjs(date2), 'm');
 const getDifferenceInMinutes = (date1, date2) => Math.abs(dayjs(date1).diff(dayjs(date2), 'm'));
 const getDifference = (date1, date2) => {
   const totalMinutes = getDifferenceInMinutes(date1, date2);
@@ -11,6 +12,7 @@ const getDifference = (date1, date2) => {
   const minutes = totalMinutes%60;
   return `${hours}h ${minutes}m`;
 };
+const toIsoString = (date) => dayjs(date).toISOString();
 const getformDateTime = (date) => date ? dayjs(date).format('DD/MM/YY HH:mm') : dayjs();
 const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'd') < 0;
 const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'd') >= 0;
@@ -25,4 +27,4 @@ const sortByDate = (pointA, pointB)=> dayjs(pointB.dateFrom).diff(dayjs(pointA.d
 const sortByDuration = (pointA, pointB)=>getDifferenceInMinutes(pointB.dateFrom, pointB.dateTo) - getDifferenceInMinutes(pointA.dateFrom, pointA.dateTo);
 const sortByPrice = (pointA, pointB)=> pointB.basePrice - pointA.basePrice;
 
-export { getShortDate, getDate, getTime, getDifference, getformDateTime, isPast, isFuture, filter, sortByDate, sortByDuration, sortByPrice};
+export { getShortDate, getDate, getTime, getDifference, getformDateTime, isPast, isFuture, filter, sortByDate, sortByDuration, sortByPrice, getSimpleDifference, toIsoString};

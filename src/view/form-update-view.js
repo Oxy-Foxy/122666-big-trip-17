@@ -1,6 +1,8 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {PointTypes} from '../enums';
-import {getformDateTime} from '../utils';
+import {getformDateTime, getSimpleDifference, toIsoString} from '../utils';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const getDestinationsOptions = (destinations)=>{
   const destinationsNames = destinations.map((destination) => destination.name);
@@ -142,6 +144,8 @@ export default class FormUpdateView extends AbstractStatefulView {
   #filteredOffers = null;
   #destinations = null;
   #typeRadios = null;
+  #datepickerFrom = null;
+  #datepickerTo = null;
 
   constructor(point, offers, destinations){
     super();
@@ -152,11 +156,26 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
 
     this.#setInnerHandlers();
+    this.#setDateFromDatepicker();
+    this.#setDateToDatepicker();
   }
 
   get template() {
     return createNewFormUpdateTemplate(this._state, this.#destinations);
   }
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#datepickerFrom) {
+      this.#datepickerFrom.destroy();
+      this.#datepickerFrom = null;
+    }
+    if (this.#datepickerTo) {
+      this.#datepickerTo.destroy();
+      this.#datepickerTo = null;
+    }
+  };
 
   setClickHandler = (callback)=>{
     this._callback.click = callback;
@@ -226,11 +245,70 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.element.querySelector('#event-price-1').addEventListener('input', this.#priceInputHandler);
   };
 
+  #setDateFromDatepicker = () => {
+    if (this._state.point.dateFrom) {
+      this.#datepickerFrom = flatpickr(
+        this.element.querySelector('#event-start-time-1'),
+        {
+          dateFormat: 'j/m/Y H:i',
+          enableTime: true,
+          'time_24hr': true,
+          defaultDate: toIsoString(this._state.point.dateFrom),
+          onClose: this.#dateFromChangeHandler,
+          minDate: 'today'
+        },
+      );
+    }
+  };
+
+  #setDateToDatepicker = () => {
+    if (this._state.point.dateTo) {
+      const defaultDate = this.#getDefaultDateTo();
+      this.#datepickerTo = flatpickr(
+        this.element.querySelector('#event-end-time-1'),
+        {
+          dateFormat: 'j/m/Y H:i',
+          enableTime: true,
+          'time_24hr': true,
+          defaultDate,
+          onClose: this.#dateToChangeHandler,
+          minDate: toIsoString(this._state.point.dateFrom)
+        },
+      );
+    }
+  };
+
+  #getDefaultDateTo = ()=> {
+    const date1 = this._state.point.dateFrom instanceof Date ? this._state.point.dateFrom.toISOString() : toIsoString(this._state.point.dateFrom);
+    const date2 = toIsoString(this._state.point.dateTo);
+    return getSimpleDifference(date1, date2) > 0 ? toIsoString(this._state.point.dateFrom) : toIsoString(this._state.point.dateTo);
+  };
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this.updateElement({point:{
+      ...this._state.point,
+      dateFrom: userDate,
+    }});
+    this.#datepickerTo.destroy();
+    this.#datepickerTo = null;
+    this.#setDateToDatepicker();
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this.updateElement({point: {
+      ...this._state.point,
+      dateTo: userDate,
+    }});
+
+  };
+
   _restoreHandlers = ()=>{
     this.#setInnerHandlers();
     this.setSubmitHandler(this._callback.submit);
     this.setClickHandler(this._callback.click);
     this.setDeleteClickHandler(this._callback.delete);
+    this.#setDateFromDatepicker();
+    this.#setDateToDatepicker();
   };
 
   reset = (point, offers)=>{
