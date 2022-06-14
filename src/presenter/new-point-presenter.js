@@ -11,7 +11,8 @@ const BLANK_POINT = {
   destination:null,
   isFavorite: false,
   offers:[],
-  type:''
+  type:'',
+  isNew: true
 };
 
 export default class PointPresenter {
@@ -71,6 +72,7 @@ export default class PointPresenter {
       point: {...point,
         isDisabled: true,
         isSaving: true,
+        isNew: true
       }
     });
   };

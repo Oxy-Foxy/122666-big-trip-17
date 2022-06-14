@@ -14,16 +14,17 @@ const getDifference = (date1, date2) => {
 };
 const toIsoString = (date) => dayjs(date).toISOString();
 const getformDateTime = (date) => date ? dayjs(date).format('DD/MM/YY HH:mm') : dayjs();
-const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'd') < 0;
-const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'd') >= 0;
+const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'm') < 0;
+const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'm') >= 0;
+const isCommon = (startDate, endDate) => dayjs(startDate).diff(dayjs(), 'm') < 0 && dayjs(endDate).diff(dayjs(), 'm') >= 0;
 
 const filter = {
   [FilterType.EVERYTHING]: (points) => points,
-  [FilterType.FUTURE]: (points) => points.filter((point) => isFuture(point.dateFrom)),
-  [FilterType.PAST]: (points) => points.filter((point) => isPast(point.dateTo)),
+  [FilterType.FUTURE]: (points) => points.filter((point) => isFuture(point.dateFrom) || isCommon(point.dateFrom, point.dateTo)),
+  [FilterType.PAST]: (points) => points.filter((point) => isPast(point.dateTo) || isCommon(point.dateFrom, point.dateTo)),
 };
 
-const sortByDate = (pointA, pointB)=> dayjs(pointB.dateFrom).diff(dayjs(pointA.dateFrom));
+const sortByDate = (pointA, pointB)=> dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
 const sortByDuration = (pointA, pointB)=>getDifferenceInMinutes(pointB.dateFrom, pointB.dateTo) - getDifferenceInMinutes(pointA.dateFrom, pointA.dateTo);
 const sortByPrice = (pointA, pointB)=> pointB.basePrice - pointA.basePrice;
 

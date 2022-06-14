@@ -81,7 +81,14 @@ const getSaveButton = (point)=>{
   return `<button class="event__save-btn  btn  btn--blue" type="submit" ${disabled}>${text}</button>`;
 };
 const getDeleteButton = (point)=>{
-  const text = point.isDeleting ? 'Deleting...' : 'Delete';
+  let text = '';
+  if(point.isNew && !point.isDeleting){
+    text = 'Cancel';
+  } else if(!point.isNew && point.isDeleting) {
+    text = 'Deleting...';
+  } else {
+    text = 'Delete';
+  }
   const disabled = point.isDisabled ? 'disabled' : '';
   return `<button  class="event__reset-btn" type="reset" ${disabled}>${text}</button>`;
 };
@@ -275,7 +282,6 @@ export default class FormUpdateView extends AbstractStatefulView {
           'time_24hr': true,
           defaultDate: toIsoString(this._state.point.dateFrom),
           onClose: this.#dateFromChangeHandler,
-          minDate: 'today'
         },
       );
     }
@@ -341,6 +347,7 @@ export default class FormUpdateView extends AbstractStatefulView {
     delete point.isDisabled;
     delete point.isSaving;
     delete point.isDeleting;
+    if(point.isNew) {delete point.isNew;}
     return point;
   };
 
