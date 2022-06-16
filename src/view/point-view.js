@@ -1,8 +1,9 @@
 import AbstractView from '../framework/view/abstract-view';
 import {getShortDate, getDate, getTime, getDifference} from '../utils';
 
-const getOffersItems = (offers, pointOffers)=>{
+const getOffersItems = (offers, pointOffers) => {
   let result = '';
+
   offers.forEach((offer) => {
     if(pointOffers.includes(offer.id)) {
       result += `<li class="event__offer">
@@ -12,6 +13,7 @@ const getOffersItems = (offers, pointOffers)=>{
       </li>`;
     }
   });
+
   return result;
 };
 
@@ -32,31 +34,23 @@ const createNewPointTemplate = (point, filteredOffers) => {
   return `
   <div class="event">
     <time class="event__date" datetime="${date}">${shortDate}</time>
-
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
     </div>
-
     <h3 class="event__title">${point.destination.name}</h3>
-
     <div class="event__schedule">
-
       <p class="event__time">
         <time class="event__start-time" datetime="${startDateTime}">${startTime}</time>
         &mdash;
         <time class="event__end-time" datetime="${endDateTime}">${endTime}</time>
       </p>
-
       <p class="event__duration">${duration}</p>
     </div>
-
     <p class="event__price">
       &euro;&nbsp;<span class="event__price-value">${price}</span>
     </p>
-
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">${offers}</ul>
-
     <button class="event__favorite-btn ${btnClassActive}" type="button">
       <span class="visually-hidden">Add to favorite</span>
       <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -72,6 +66,7 @@ const createNewPointTemplate = (point, filteredOffers) => {
 export default class PointView extends AbstractView {
   #point = null;
   #offers = null;
+
   constructor(point, offers){
     super();
     this.#point = point;
@@ -82,19 +77,19 @@ export default class PointView extends AbstractView {
     return createNewPointTemplate(this.#point, this.#offers);
   }
 
-  setClickHandler = (callback)=>{
+  setClickHandler = (callback) => {
     this._callback.click = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
-  };
-
-  #clickHandler = (evt)=>{
-    evt.preventDefault();
-    this._callback.click();
   };
 
   setFavoriteClickHandler = (callback) => {
     this._callback.favoriteClick = callback;
     this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
   };
 
   #favoriteClickHandler = (evt) => {

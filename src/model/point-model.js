@@ -1,5 +1,5 @@
-import { UpdateType } from '../enums.js';
-import Observable from '../framework/observable.js';
+import Observable from '../framework/observable';
+import { UpdateType } from '../enums';
 
 export default class PointsModel extends Observable {
   #pointsApiService = null;
@@ -8,6 +8,10 @@ export default class PointsModel extends Observable {
   constructor(pointsApiService) {
     super();
     this.#pointsApiService = pointsApiService;
+  }
+
+  get points(){
+    return this.#points;
   }
 
   init = async () => {
@@ -19,10 +23,6 @@ export default class PointsModel extends Observable {
     }
     this._notify(UpdateType.INIT_POINTS);
   };
-
-  get points(){
-    return this.#points;
-  }
 
   updatePoint = async (updateType, point) => {
     const index = this.#points.findIndex((item) => item.id === point.id);
@@ -79,7 +79,7 @@ export default class PointsModel extends Observable {
     }
   };
 
-  #adaptToClient = (point)=>{
+  #adaptToClient = (point) => {
     const adaptedPoint = {...point,
       basePrice: point.base_price,
       dateFrom: point.date_from,

@@ -11,7 +11,8 @@ const BLANK_POINT = {
   destination:null,
   isFavorite: false,
   offers:[],
-  type:''
+  type:'',
+  isNew: true
 };
 
 export default class PointPresenter {
@@ -36,20 +37,19 @@ export default class PointPresenter {
     this.#destroyCallback = callback;
 
     this.#newPointForm.setClickHandler(()=>{
-      this.#onEditFormRollupBtnClick();
+      this.#editFormRollupBtnClickHandler();
     });
     this.#newPointForm.setSubmitHandler((state)=>{
-      this.#onEditFormSubmit(state.point);
+      this.#editFormSubmitHandler(state);
     });
     this.#newPointForm.setDeleteClickHandler(()=>{
-      this.#onDeleteClick();
+      this.#deleteBtnClickHandler();
     });
 
     render(this.#listItem, this.#listComponent.element, 'afterbegin');
     render(this.#newPointForm, this.#listItem.element);
 
-    document.addEventListener('keydown', this.#onEscKeyDown);
-
+    document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
   destroy = () => {
@@ -57,35 +57,58 @@ export default class PointPresenter {
       return;
     }
 
-
     this.#destroyCallback?.();
     remove(this.#newPointForm);
     remove(this.#listItem);
     this.#newPointForm = null;
     this.#listItem = null;
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  #onEditFormSubmit = (point) => {
+  setSaving = (point) => {
+    this.#newPointForm.updateElement({
+      point: {...point,
+        isDisabled: true,
+        isSaving: true,
+        isNew: true
+      }
+    });
+  };
+
+  setAborting = (point) => {
+    const resetFormState = () => {
+      this.#newPointForm.updateElement({
+        point: {
+          ...point,
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
+      });
+    };
+
+    this.#newPointForm.shake(resetFormState);
+  };
+
+  #editFormSubmitHandler = (point) => {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
       {...point},
     );
+  };
+
+  #deleteBtnClickHandler = () => {
     this.destroy();
   };
 
-  #onDeleteClick = () => {
-    this.destroy();
-  };
-
-  #onEscKeyDown = (evt)=> {
+  #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this.destroy();
     }
   };
 
-  #onEditFormRollupBtnClick = () => {
+  #editFormRollupBtnClickHandler = () => {
     this.destroy();
   };
 }

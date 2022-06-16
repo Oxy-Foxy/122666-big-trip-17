@@ -1,5 +1,5 @@
-import { UpdateType } from '../enums.js';
 import Observable from '../framework/observable.js';
+import { UpdateType } from '../enums.js';
 
 export default class OffersModel extends Observable{
   #offersApiService = null;

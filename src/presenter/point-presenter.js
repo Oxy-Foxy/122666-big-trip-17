@@ -36,18 +36,18 @@ export default class PointPresenter {
     this.#editItem = new formUpdateView(this.#point, this.#offers, this.#destinations);
     this.#pointElm = new pointView(this.#point, this.#filteredOffers);
 
-    this.#pointElm.setClickHandler(()=>{
-      this.#onPointRollupBtnClick();
+    this.#pointElm.setClickHandler(() => {
+      this.#pointRollupBtnClickHandler();
     });
 
-    this.#editItem.setClickHandler(()=>{
-      this.#onEditFormRollupBtnClick();
+    this.#editItem.setClickHandler(() => {
+      this.#editFormRollupBtnClickHandler();
     });
-    this.#editItem.setSubmitHandler((state)=>{
-      this.#onEditFormSubmit(state.point);
+    this.#editItem.setSubmitHandler((state) => {
+      this.#editFormSubmitHandler(state);
     });
-    this.#editItem.setDeleteClickHandler((state)=>{
-      this.#onDeleteClick(state.point);
+    this.#editItem.setDeleteClickHandler((state) => {
+      this.#deleteBtnClickHandler(state);
     });
     this.#pointElm.setFavoriteClickHandler(this.#handleFavoriteClick);
 
@@ -67,57 +67,6 @@ export default class PointPresenter {
     remove(prevEditItem);
   };
 
-  #showForm = () => {
-    replace(this.#editItem, this.#pointElm);
-    document.addEventListener('keydown', this.#onEscKeyDown);
-    this.#changeMode();
-    this.#mode = Mode.EDITING;
-  };
-
-  #hideForm = () => {
-    replace(this.#pointElm, this.#editItem);
-    document.removeEventListener('keydown', this.#onEscKeyDown);
-    this.#mode = Mode.DEFAULT;
-  };
-
-  #onPointRollupBtnClick = () => {
-    this.#showForm();
-  };
-
-  #onEditFormRollupBtnClick = () => {
-    this.#hideFormHandler();
-  };
-
-  #onEditFormSubmit = (point) => {
-    const isMinorUpdate = isPast(this.#point.dateTo) === isPast(point.dateTo) && isFuture(this.#point.dateFrom) === isFuture(point.dateFrom);
-    this.#changeData(
-      UserAction.UPDATE_POINT,
-      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
-      point,
-    );
-    this.#hideFormHandler();
-  };
-
-  #onDeleteClick = (point) => {
-    this.#changeData(
-      UserAction.DELETE_POINT,
-      UpdateType.MINOR,
-      point,
-    );
-  };
-
-  #onEscKeyDown = (evt)=> {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      this.#hideFormHandler();
-    }
-  };
-
-  #hideFormHandler(){
-    this.#editItem.reset(this.#point, this.#filteredOffers);
-    this.#hideForm();
-    document.removeEventListener('keydown', this.#onEscKeyDown);
-  }
-
   destroy = () => {
     remove(this.#listItem);
     remove(this.#pointElm);
@@ -131,9 +80,106 @@ export default class PointPresenter {
     }
   };
 
-  #handleFavoriteClick = ()=> {
-    this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+  setSaving = (point) => {
+    if (this.#mode === Mode.EDITING) {
+      this.#editItem.updateElement({
+        point: {...point,
+          isDisabled: true,
+          isSaving: true,
+        }
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#editItem.updateElement({
+        point: {...this.#point,
+          isDisabled: true,
+          isDeleting: true,
+        }
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#editItem.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editItem.updateElement({
+        point: {
+          ...this.#point,
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
+      });
+    };
+
+    this.#editItem.shake(resetFormState);
+  };
+
+  #showForm = () => {
+    replace(this.#editItem, this.#pointElm);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#changeMode();
+    this.#mode = Mode.EDITING;
+  };
+
+  #hideForm = () => {
+    replace(this.#pointElm, this.#editItem);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
   };
 
   #filterOffers = (point) => this.#offers.filter((offersItem) => offersItem.type === point.type)[0].offers;
+
+  #pointRollupBtnClickHandler = () => {
+    this.#showForm();
+  };
+
+  #editFormRollupBtnClickHandler = () => {
+    this.#hideFormHandler();
+  };
+
+  #editFormSubmitHandler = (point) => {
+    const isMinorUpdate = isPast(this.#point.dateTo) === isPast(point.dateTo) && isFuture(this.#point.dateFrom) === isFuture(point.dateFrom);
+
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      point,
+    );
+  };
+
+  #deleteBtnClickHandler = (point) => {
+    this.#changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
+  };
+
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      this.#hideFormHandler();
+    }
+  };
+
+  #hideFormHandler = () => {
+    this.#editItem.reset(this.#point, this.#filteredOffers);
+    this.#hideForm();
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
+  };
+
+  #handleFavoriteClick = () => {
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      {...this.#point, isFavorite: !this.#point.isFavorite},
+    );
+  };
 }

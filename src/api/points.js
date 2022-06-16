@@ -22,7 +22,6 @@ export default class PointsApiService extends ApiService {
     });
 
     const parsedResponse = await ApiService.parseResponse(response);
-
     return parsedResponse;
   };
 
@@ -48,11 +47,11 @@ export default class PointsApiService extends ApiService {
     return response;
   };
 
-  #adaptToServer = (point)=>{
+  #adaptToServer = (point) => {
     const adaptedPoint = {...point,
       'base_price': point.basePrice,
-      'date_from': point.dateFrom,
-      'date_to': point.dateTo,
+      'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : point.dateFrom,
+      'date_to': point.dateTo instanceof Date ? point.dateTo.toISOString() : point.dateTo,
       'is_favorite': point.isFavorite,
       'offers':point.offers
     };
@@ -60,6 +59,10 @@ export default class PointsApiService extends ApiService {
     delete adaptedPoint['dateFrom'];
     delete adaptedPoint['dateTo'];
     delete adaptedPoint['isFavorite'];
+    delete adaptedPoint.isDisabled;
+    delete adaptedPoint.isSaving;
+    delete adaptedPoint.isDeleting;
+    if(adaptedPoint.isNew) {delete adaptedPoint.isNew;}
 
     return adaptedPoint;
   };
