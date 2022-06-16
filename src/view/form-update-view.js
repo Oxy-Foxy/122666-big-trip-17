@@ -117,7 +117,6 @@ const createNewFormUpdateTemplate = (state, destinations) => {
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
   const images = point.destination ? getImages(point.destination.pictures) : '';
-  console.log(images);
   const destinationsItems = getDestinationsOptions(destinations);
 
   return `
