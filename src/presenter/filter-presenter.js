@@ -1,5 +1,5 @@
-import {render, replace, remove} from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
+import {render, replace, remove} from '../framework/render.js';
 import {filter} from '../utils.js';
 import {FilterType, UpdateType} from '../enums.js';
 
@@ -9,7 +9,6 @@ export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
   #pointsModel = null;
-
   #filterComponent = null;
 
   constructor(filterModel, pointsModel) {
@@ -46,8 +45,8 @@ export default class FilterPresenter {
     const prevFilterComponent = this.#filterComponent;
 
     this.#filterComponent = new FilterView(filters, this.#filterModel.filter);
-    this.#filterComponent.setFilterTypeChangeHandler(this.#handleFilterTypeChange);
 
+    this.#filterComponent.setFilterTypeChangeHandler(this.#handleFilterTypeChange);
     this.#pointsModel.addObserver(this.#handleModelEvent);
 
     if (prevFilterComponent === null) {

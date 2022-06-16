@@ -1,5 +1,5 @@
-import { UpdateType } from '../enums.js';
 import Observable from '../framework/observable.js';
+import { UpdateType } from '../enums.js';
 
 export default class DestinationModel extends Observable {
   #destinationsApiService = null;
@@ -22,5 +22,4 @@ export default class DestinationModel extends Observable {
     }
     this._notify(UpdateType.INIT_DESTINATIONS);
   };
-
 }

@@ -22,7 +22,6 @@ export default class PointsApiService extends ApiService {
     });
 
     const parsedResponse = await ApiService.parseResponse(response);
-
     return parsedResponse;
   };
 
@@ -48,7 +47,7 @@ export default class PointsApiService extends ApiService {
     return response;
   };
 
-  #adaptToServer = (point)=>{
+  #adaptToServer = (point) => {
     const adaptedPoint = {...point,
       'base_price': point.basePrice,
       'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : point.dateFrom,
@@ -64,7 +63,6 @@ export default class PointsApiService extends ApiService {
     delete adaptedPoint.isSaving;
     delete adaptedPoint.isDeleting;
     if(adaptedPoint.isNew) {delete adaptedPoint.isNew;}
-
 
     return adaptedPoint;
   };

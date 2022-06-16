@@ -6,6 +6,7 @@ const emptyMessageTypes = {
   [FilterType.PAST]:'No past events',
   [FilterType.FUTURE]:'No future events',
 };
+
 const createNewEmptyMessageTemplate = (filterType) => {
   const message = emptyMessageTypes[filterType];
   return `<p class="trip-events__msg">${message}</p>`;
@@ -13,6 +14,7 @@ const createNewEmptyMessageTemplate = (filterType) => {
 
 export default class EmptyMessageView extends AbstractView {
   #filterType = null;
+
   constructor(filterType){
     super();
     this.#filterType = filterType;
