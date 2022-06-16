@@ -29,7 +29,7 @@ const getTypesItems = (point) => {
 };
 
 const getImages = (pictures) => {
-  if(pictures.length) {return '';}
+  if(!pictures.length) {return '';}
 
   let images = '';
   pictures.forEach((picture) => {
@@ -117,6 +117,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
   const pointOffers = point.offers;
   const typeOffers = getTypeOffers(filteredOffers, pointOffers);
   const images = point.destination ? getImages(point.destination.pictures) : '';
+  console.log(images);
   const destinationsItems = getDestinationsOptions(destinations);
 
   return `
@@ -186,8 +187,8 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.#destinations = destinations;
     this.#offers = offers;
     this.#filteredOffers = this.#filterOffers(point);
-    this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
     this._state = FormUpdateView.parsePointToState(point, this.#filteredOffers);
+    this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
 
     this.#setInnerHandlers();
     this.#setDateFromDatepicker();

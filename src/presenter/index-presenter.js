@@ -163,7 +163,7 @@ export default class IndexPresenter {
     this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointPresenter.get(point.id).setSaving();
+        this.#pointPresenter.get(point.id).setSaving(point);
         try {
           await this.#pointsModel.updatePoint(updateType, point);
         } catch (error) {
