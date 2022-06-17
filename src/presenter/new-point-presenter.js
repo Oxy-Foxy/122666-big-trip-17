@@ -5,13 +5,13 @@ import {UserAction, UpdateType} from '../enums.js';
 import {getformDateTime} from '../utils';
 
 const BLANK_POINT = {
-  basePrice: 0,
+  basePrice: 1,
   dateFrom: getformDateTime(),
   dateTo: getformDateTime(),
   destination:null,
   isFavorite: false,
   offers:[],
-  type:'',
+  type:'sightseeing',
   isNew: true
 };
 

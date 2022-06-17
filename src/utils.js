@@ -7,16 +7,26 @@ const getTime = (date) => dayjs(date).format('HH:mm');
 const getSimpleDifference = (date1, date2) => dayjs(date1).diff(dayjs(date2), 'm');
 const getDifferenceInMinutes = (date1, date2) => Math.abs(dayjs(date1).diff(dayjs(date2), 'm'));
 const getDifference = (date1, date2) => {
-  const totalMinutes = getDifferenceInMinutes(date1, date2);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes%60;
-  return `${hours}h ${minutes}m`;
+  const totalMinutes = Math.abs(dayjs(date1).diff(dayjs(date2), 'm'));
+  const totalHours = totalMinutes / 60;
+  const days = Math.floor(totalHours/24).toString().padStart(2, '0');
+  const hours = Math.floor(totalHours % 24).toString().padStart(2, '0');
+  const minutes = Math.floor(totalMinutes % 60).toString().padStart(2, '0');
+  let result = '';
+  if (days > 0) {
+    result = `${days}d ${hours}h ${minutes}m`;
+  }else if(days === 0 && hours > 0) {
+    result = `${hours}h ${minutes}m`;
+  } else {
+    result = `${minutes}m`;
+  }
+  return result;
 };
 const toIsoString = (date) => dayjs(date).toISOString();
 const getformDateTime = (date) => date ? dayjs(date).format('DD/MM/YY HH:mm') : dayjs();
-const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'm') < 0;
-const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'm') >= 0;
-const isCommon = (startDate, endDate) => dayjs(startDate).diff(dayjs(), 'm') < 0 && dayjs(endDate).diff(dayjs(), 'm') >= 0;
+const isPast = (endDate) => dayjs(endDate).diff(dayjs(), 'd') < 0;
+const isFuture = (startDate) => dayjs(startDate).diff(dayjs(), 'd') >= 0;
+const isCommon = (startDate, endDate) => dayjs(startDate).diff(dayjs(), 'd') < 0 && dayjs(endDate).diff(dayjs(), 'd') >= 0;
 
 const filter = {
   [FilterType.EVERYTHING]: (points) => points,

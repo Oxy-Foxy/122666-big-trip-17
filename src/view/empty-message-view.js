@@ -3,8 +3,8 @@ import {FilterType} from '../enums.js';
 
 const emptyMessageTypes = {
   [FilterType.EVERYTHING]:'Click New Event to create your first point',
-  [FilterType.PAST]:'No past events',
-  [FilterType.FUTURE]:'No future events',
+  [FilterType.PAST]:'There are no past events now',
+  [FilterType.FUTURE]:'There are no future events now',
 };
 
 const createNewEmptyMessageTemplate = (filterType) => {

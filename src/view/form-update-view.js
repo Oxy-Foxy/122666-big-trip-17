@@ -139,7 +139,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
         <label class="event__label  event__type-output" for="event-destination-1">
           ${type}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1" ${point.isDisabled ? 'disabled' : ''}>
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1" ${point.isDisabled ? 'disabled' : ''} required>
         <datalist id="destination-list-1">
           ${destinationsItems}
         </datalist>
@@ -156,7 +156,7 @@ const createNewFormUpdateTemplate = (state, destinations) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}" ${point.isDisabled ? 'disabled' : ''}>
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}" ${point.isDisabled ? 'disabled' : ''} required min="1" />
       </div>
       ${getSaveButton(point)}
       ${getDeleteButton(point)}
@@ -188,7 +188,6 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.#filteredOffers = this.#filterOffers(point);
     this._state = FormUpdateView.parsePointToState(point, this.#filteredOffers);
     this.#typeRadios = Array.from(this.element.querySelectorAll('.event__type-input'));
-
     this.#setInnerHandlers();
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
@@ -247,7 +246,6 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('click',  this.#typeChangeHandler);
     this.element.querySelector('#event-destination-1').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('#event-price-1').addEventListener('change', this.#priceChangeHandler);
-    this.element.querySelector('#event-price-1').addEventListener('input', this.#priceInputHandler);
   };
 
   #setDateFromDatepicker = () => {
@@ -267,14 +265,13 @@ export default class FormUpdateView extends AbstractStatefulView {
 
   #setDateToDatepicker = () => {
     if (this._state.point.dateTo) {
-      const defaultDate = this.#getDefaultDateTo();
       this.#datepickerTo = flatpickr(
         this.element.querySelector('#event-end-time-1'),
         {
           dateFormat: 'j/m/Y H:i',
           enableTime: true,
           'time_24hr': true,
-          defaultDate,
+          defaultDate:toIsoString(this._state.point.dateTo),
           onClose: this.#dateToChangeHandler,
           minDate: toIsoString(this._state.point.dateFrom)
         },
@@ -285,8 +282,8 @@ export default class FormUpdateView extends AbstractStatefulView {
   #getDefaultDateTo = () => {
     const date1 = this._state.point.dateFrom instanceof Date ? this._state.point.dateFrom.toISOString() : toIsoString(this._state.point.dateFrom);
     const date2 = toIsoString(this._state.point.dateTo);
-
-    return getSimpleDifference(date1, date2) > 0 ? toIsoString(this._state.point.dateFrom) : toIsoString(this._state.point.dateTo);
+    const result = getSimpleDifference(date1, date2) > 0 ? toIsoString(this._state.point.dateFrom) : toIsoString(this._state.point.dateTo);
+    return result;
   };
 
   #clickHandler = (evt) => {
@@ -334,13 +331,6 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.updateElement({point: {...this._state.point, destination}});
   };
 
-  #priceInputHandler = (evt) => {
-    const newPrice = evt.target.value;
-    if(!/^[0-9]+$/.test(newPrice) && newPrice !== ''){
-      evt.target.value = '';
-    }
-  };
-
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
     const newPrice = evt.target.value;
@@ -355,6 +345,11 @@ export default class FormUpdateView extends AbstractStatefulView {
     this.#datepickerTo.destroy();
     this.#datepickerTo = null;
     this.#setDateToDatepicker();
+    if(getSimpleDifference(userDate, this._state.point.dateTo) < 0) {return;}
+    this.updateElement({point: {
+      ...this._state.point,
+      dateTo: userDate,
+    }});
   };
 
   #dateToChangeHandler = ([userDate]) => {
