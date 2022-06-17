@@ -15,7 +15,7 @@ const getDifference = (date1, date2) => {
   let result = '';
   if (days > 0) {
     result = `${days}d ${hours}h ${minutes}m`;
-  }else if(days === 0 && hours > 0) {
+  }else if(days === '00' && hours > 0) {
     result = `${hours}h ${minutes}m`;
   } else {
     result = `${minutes}m`;
