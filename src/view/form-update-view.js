@@ -307,7 +307,11 @@ export default class FormUpdateView extends AbstractStatefulView {
     const typeRadioInput = this.#typeRadios.filter((elm) => elm.id === typeRadioId)[0];
     if(!typeRadioInput) {return;}
     const type = typeRadioInput.value;
-    this.updateElement({point: {...this._state.point, type}});
+    const offersElements = Array.from(document.querySelectorAll('.event__offer-checkbox'));
+    for (const element of offersElements) {
+      element.removeAttribute('checked');
+    }
+    this.updateElement({point: {...this._state.point, type, offers:[]}});
     this.#filteredOffers = this.#filterOffers(this._state.point, this.#offers);
     this.updateElement({offers: this.#filteredOffers});
   };
