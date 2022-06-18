@@ -334,7 +334,7 @@ export default class FormUpdateView extends AbstractStatefulView {
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
     const newPrice = evt.target.value;
-    this.updateElement({point: {...this._state.point, basePrice:Number(newPrice)}});
+    this.updateElement({point: {...this._state.point, basePrice: Math.abs(Number(newPrice))}});
   };
 
   #dateFromChangeHandler = ([userDate]) => {
