@@ -279,13 +279,6 @@ export default class FormUpdateView extends AbstractStatefulView {
     }
   };
 
-  #getDefaultDateTo = () => {
-    const date1 = this._state.point.dateFrom instanceof Date ? this._state.point.dateFrom.toISOString() : toIsoString(this._state.point.dateFrom);
-    const date2 = toIsoString(this._state.point.dateTo);
-    const result = getSimpleDifference(date1, date2) > 0 ? toIsoString(this._state.point.dateFrom) : toIsoString(this._state.point.dateTo);
-    return result;
-  };
-
   #clickHandler = (evt) => {
     evt.preventDefault();
     this._callback.click();
